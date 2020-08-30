@@ -1,0 +1,11 @@
+[package]
+name = "randomization" # the name of the package
+version = "0.1.0"    # the current version, obeying semver
+authors = ["Joel Overbeck"]
+
+
+[lib]
+
+[dependencies]
+rand = "0.7.3"
+rand_distr = "0.3.0"

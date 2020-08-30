@@ -1,7 +1,7 @@
 extern crate rand;
 extern crate rand_distr;
 
-use self::rand::{rngs::ThreadRng, Rng};
+use self::rand::rngs::ThreadRng;
 use self::rand_distr::{Distribution, Normal};
 
 pub trait RandomizerTrait {
@@ -10,6 +10,12 @@ pub trait RandomizerTrait {
 
 pub struct Randomizer {
     rng: ThreadRng,
+}
+
+impl Default for Randomizer {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Randomizer {

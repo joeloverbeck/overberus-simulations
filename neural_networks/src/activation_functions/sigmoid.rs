@@ -1,4 +1,4 @@
-fn sigmoid(z: f64) -> f64 {
+pub fn sigmoid(z: f64) -> f64 {
     let e = std::f64::consts::E;
     1.0 / (1.0 + e.powf(-z))
 }

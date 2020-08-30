@@ -1,6 +1,7 @@
 extern crate randomization;
 
 use self::randomization::randomizer::RandomizerTrait;
+use activation_functions::sigmoid::sigmoid;
 use layer::randomization::randomizer::Randomizer;
 
 pub trait LayerTrait {
@@ -15,6 +16,7 @@ pub trait LayerTrait {
     fn get_number_of_neurons(&self) -> u32;
     fn get_number_of_weights(&self) -> u32;
     fn get_number_of_biases(&self) -> u32;
+    fn feed_forward(&self, inputs: &[f64]) -> Vec<f64>;
 }
 
 pub struct Layer {
@@ -24,7 +26,26 @@ pub struct Layer {
     biases: Vec<f64>,
 }
 
-impl Layer {}
+impl Layer {
+    fn multiply_each_input_with_the_weights(&self, inputs: &[f64]) -> Vec<f64> {
+        self.weights
+            .iter()
+            .map(|ws| ws.iter().zip(inputs.iter()).map(|(w, x)| w * x).sum())
+            .collect()
+    }
+
+    fn sum_biases_and_weights(&self, inputs_and_weights_multiplied: Vec<f64>) -> Vec<f64> {
+        inputs_and_weights_multiplied
+            .iter()
+            .zip(self.biases.iter())
+            .map(|(wx, b)| wx + b)
+            .collect()
+    }
+
+    fn activate_weights(&self, prepared_weights: Vec<f64>) -> Vec<f64> {
+        prepared_weights.iter().map(|z| sigmoid(*z)).collect()
+    }
+}
 
 impl LayerTrait for Layer {
     type Randomizer = Randomizer;
@@ -37,7 +58,9 @@ impl LayerTrait for Layer {
         Layer {
             number_of_inputs,
             number_of_neurons,
-            biases: (0..number_of_neurons).map(|_| randomizer.get_normal()).collect(),
+            biases: (0..number_of_neurons)
+                .map(|_| randomizer.get_normal())
+                .collect(),
             weights: (0..number_of_neurons)
                 .map(|_| {
                     (0..number_of_inputs)
@@ -61,6 +84,20 @@ impl LayerTrait for Layer {
     }
     fn get_number_of_biases(&self) -> u32 {
         self.biases.len() as u32
+    }
+    fn feed_forward(&self, inputs: &[f64]) -> std::vec::Vec<f64> {
+        // Sanity check
+        if inputs.len() != self.number_of_inputs as usize {
+            panic!(
+                "A layer was sent {:?} inputs when it was set up with {:?}",
+                inputs.len(),
+                self.number_of_inputs
+            )
+        }
+
+        self.activate_weights(
+            self.sum_biases_and_weights(self.multiply_each_input_with_the_weights(inputs)),
+        )
     }
 }
 
@@ -108,6 +145,28 @@ mod tests {
         let layer = setup_layer();
 
         assert_eq!(layer.get_number_of_biases(), 2);
+
+        Ok(())
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_when_feed_forwarding_inputs_through_layer_with_wrong_number_of_inputs_it_should_crash()
+    {
+        let layer = setup_layer();
+
+        layer.feed_forward(&vec![1f64, 2f64]);
+    }
+
+    #[test]
+    fn test_when_feed_forwarding_inputs_through_layer_with_right_amount_of_inputs_it_should_produce_right_amount_of_outputs(
+    ) -> Result<(), String> {
+        let layer = setup_layer();
+
+        let outputs = layer.feed_forward(&vec![0f64, 1f64, 0f64]);
+
+        println!("{:?}", outputs);
+        assert_eq!(outputs.len(), 2);
 
         Ok(())
     }

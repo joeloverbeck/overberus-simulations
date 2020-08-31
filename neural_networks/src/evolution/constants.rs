@@ -1,0 +1,2 @@
+pub const CROSSOVER_PROBABILITY: f64 = 0.01;
+pub const MUTATION_PROBABILITY: f64 = 0.005;

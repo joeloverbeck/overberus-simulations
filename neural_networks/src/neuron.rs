@@ -9,6 +9,10 @@ pub trait NeuronTrait {
     fn new<T: RandomizerTrait>(number_of_inputs: u32, randomizer: &mut T) -> Self;
     fn get_number_of_weights(&self) -> u32;
     fn activate(&self, inputs: &[f64]) -> Result<f64, String>;
+    fn get_bias(&self) -> f64;
+    fn set_bias(&mut self, bias: f64);
+    fn get_weight(&self, index: usize) -> Result<f64, String>;
+    fn set_weight(&mut self, index: usize, weight: f64) -> Result<(), String>;
 }
 
 pub struct Neuron {
@@ -57,6 +61,22 @@ impl NeuronTrait for Neuron {
                 + self.bias,
         ))
     }
+    fn set_bias(&mut self, bias: f64) {
+        self.bias = bias
+    }
+    fn get_bias(&self) -> f64 {
+        self.bias
+    }
+    fn get_weight(&self, index: usize) -> std::result::Result<f64, std::string::String> {
+        Ok(self.weights[index])
+    }
+    fn set_weight(
+        &mut self,
+        index: usize,
+        weight: f64,
+    ) -> std::result::Result<(), std::string::String> {
+        Ok(self.weights[index] = weight)
+    }
 }
 
 #[cfg(test)]
@@ -73,6 +93,9 @@ mod tests {
         impl RandomizerTrait for FakeRandomizer {
             fn get_normal(&mut self) -> f64 {
                 0.4_f64
+            }
+            fn generate_f64(&mut self) -> f64 {
+                todo!()
             }
         }
 

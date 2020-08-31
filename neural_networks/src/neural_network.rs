@@ -14,8 +14,10 @@ pub trait NeuralNetworkTrait {
     ) -> Self;
     fn get_number_of_layers(&self) -> u32;
     fn get_layer(&self, index: usize) -> &Self::Layer;
+    fn get_layers(&self) -> &Vec<Self::Layer>;
     fn add(&mut self, layer: Self::Layer) -> Result<(), String>;
     fn propagate(&self, inputs: &[f64]) -> Result<Vec<f64>, String>;
+    fn mutate(&mut self) -> Result<(), String>;
 }
 
 #[derive(Debug)]
@@ -86,6 +88,16 @@ impl NeuralNetworkTrait for NeuralNetwork {
         }
 
         Ok(this_out)
+    }
+    fn get_layers(&self) -> &Vec<Self::Layer> {
+        &self.layers
+    }
+    fn mutate(&mut self) -> std::result::Result<(), std::string::String> {
+        for layer in &mut self.layers {
+            layer.mutate()?;
+        }
+
+        Ok(())
     }
 }
 
@@ -189,6 +201,9 @@ mod tests {
         impl RandomizerTrait for FakeRandomizer {
             fn get_normal(&mut self) -> f64 {
                 0.4_f64
+            }
+            fn generate_f64(&mut self) -> f64 {
+                todo!()
             }
         }
 

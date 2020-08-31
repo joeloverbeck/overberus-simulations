@@ -70,6 +70,36 @@ impl Population<Genome<NeuralNetwork>, NeuralNetwork> {
 
         Ok(population)
     }
+
+    fn create_next_generation<T: RandomizerTrait>(
+        &self,
+        randomizer: &mut T,
+    ) -> Result<Population<Genome<NeuralNetwork>, NeuralNetwork>, String> {
+        let mut next_generation = Population::new();
+
+        let sorted_index = self.get_sorted_index();
+
+        let mid = self.get_size() % 2 + self.get_size() / 2;
+
+        for index in 0..mid {
+            let first_parent = self.get_genome(sorted_index[index as usize])?;
+            let second_parent = self.get_genome(sorted_index[(index + 1) as usize])?;
+
+            let (mut first_child, mut second_child) =
+                first_parent.crossover(second_parent, randomizer)?;
+
+            first_child.mutate()?;
+            second_child.mutate()?;
+
+            next_generation.add(first_child)?;
+
+            if !(index == mid - 1 && self.get_size() % 2 == 1) {
+                next_generation.add(second_child)?;
+            }
+        }
+
+        Ok(next_generation)
+    }
 }
 
 impl<T: GenomeTrait<U>, U: NeuralNetworkTrait> PopulationTrait<T, U> for Population<T, U> {
@@ -292,6 +322,22 @@ mod tests {
         let sorted_indexes = population.get_sorted_index();
 
         assert_eq!(sorted_indexes, vec![1, 2, 0]);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_can_create_next_generation_from_existing_population() -> Result<(), String> {
+        let mut population = setup_manual_population()?;
+
+        population.get_genome_mut(0)?.set_fitness(5.0_f64);
+        population.get_genome_mut(1)?.set_fitness(10.0_f64);
+
+        let mut randomizer = Randomizer::new();
+
+        let next_generation = population.create_next_generation(&mut randomizer)?;
+
+        assert_eq!(next_generation.get_size(), population.get_size());
 
         Ok(())
     }

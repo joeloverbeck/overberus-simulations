@@ -1,6 +1,8 @@
 extern crate randomization;
 
+use evolution::constants::MUTATION_PROBABILITY;
 use self::randomization::randomizer::RandomizerTrait;
+use evolution::constants::CROSSOVER_PROBABILITY;
 use neuron::Neuron;
 use neuron::NeuronTrait;
 
@@ -13,12 +15,83 @@ pub trait LayerTrait {
     fn get_number_of_inputs(&self) -> u32;
     fn get_number_of_neurons(&self) -> u32;
     fn feed_forward(&self, inputs: &[f64]) -> Vec<f64>;
+    fn should_crossover<T: RandomizerTrait>(randomizer: &mut T) -> Result<bool, String>;
+    fn should_mutate<T: RandomizerTrait>(randomizer: &mut T) -> Result<bool, String>;
 }
 
 #[derive(Debug)]
 pub struct Layer {
     number_of_inputs: u32,
     neurons: Vec<Neuron>,
+}
+
+impl Layer {
+    pub fn mutate(&self) -> Result<(), String> {
+        todo!()
+    }
+
+    pub fn crossover<T: RandomizerTrait>(
+        &self,
+        other: &Layer,
+        randomizer: &mut T,
+    ) -> Result<(Layer, Layer), String> {
+        let mut first_child =
+            Layer::new(self.number_of_inputs, self.neurons.len() as u32, randomizer);
+        let mut second_child =
+            Layer::new(self.number_of_inputs, self.neurons.len() as u32, randomizer);
+
+        // Cannot iter() over here since destructuring assignments are not allowed
+        // https://github.com/rust-lang/rfcs/issues/372
+
+        for index in 0..self.neurons.len() as usize {
+            if Layer::should_crossover(randomizer)? {
+                first_child
+                    .get_neuron_mut(index)?
+                    .set_bias(other.get_neuron(index)?.get_bias());
+                second_child
+                    .get_neuron_mut(index)?
+                    .set_bias(self.get_neuron(index)?.get_bias());
+            } else {
+                first_child
+                    .get_neuron_mut(index)?
+                    .set_bias(self.get_neuron(index)?.get_bias());
+                second_child
+                    .get_neuron_mut(index)?
+                    .set_bias(other.get_neuron(index)?.get_bias());
+            }
+
+            for j in 0..self.number_of_inputs as usize {
+                if Layer::should_crossover(randomizer)? {
+                    first_child
+                        .get_neuron_mut(index)?
+                        .set_weight(j, other.get_neuron(index)?.get_weight(j)?)?;
+                    second_child
+                        .get_neuron_mut(index)?
+                        .set_weight(j, self.get_neuron(index)?.get_weight(j)?)?;
+                } else {
+                    first_child
+                        .get_neuron_mut(index)?
+                        .set_weight(j, self.get_neuron(index)?.get_weight(j)?)?;
+                    second_child
+                        .get_neuron_mut(index)?
+                        .set_weight(j, other.get_neuron(index)?.get_weight(j)?)?;
+                }
+            }
+        }
+
+        Ok((first_child, second_child))
+    }
+
+    pub fn get_neuron(&self, index: usize) -> Result<&Neuron, String> {
+        Ok(&self.neurons[index])
+    }
+
+    pub fn get_neuron_mut(
+        &mut self,
+        index: usize,
+    ) -> std::result::Result<&mut Neuron, std::string::String> {
+        Ok(&mut self.neurons[index])
+    }
 }
 
 impl LayerTrait for Layer {
@@ -57,6 +130,17 @@ impl LayerTrait for Layer {
             .iter()
             .map(|neuron| neuron.activate(&inputs).unwrap())
             .collect()
+    }
+
+    fn should_crossover<T>(randomizer: &mut T) -> std::result::Result<bool, std::string::String>
+    where
+        T: RandomizerTrait,
+    {
+        Ok(randomizer.generate_f64() > 1f64 - CROSSOVER_PROBABILITY)
+    }
+
+    fn should_mutate<T>(randomizer: &mut T) -> std::result::Result<bool, std::string::String> where T: RandomizerTrait { 
+        Ok(randomizer.generate_f64() > 1f64 - MUTATION_PROBABILITY)
     }
 }
 

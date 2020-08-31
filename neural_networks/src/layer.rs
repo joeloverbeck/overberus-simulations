@@ -2,15 +2,12 @@ extern crate randomization;
 
 use self::randomization::randomizer::RandomizerTrait;
 use activation_functions::sigmoid::sigmoid;
-use layer::randomization::randomizer::Randomizer;
 
 pub trait LayerTrait {
-    type Randomizer: RandomizerTrait;
-
-    fn new(
+    fn new<T: RandomizerTrait>(
         number_of_inputs: u32,
         number_of_neurons: u32,
-        randomizer: &mut Self::Randomizer,
+        randomizer: &mut T,
     ) -> Layer;
     fn get_number_of_inputs(&self) -> u32;
     fn get_number_of_neurons(&self) -> u32;
@@ -48,12 +45,10 @@ impl Layer {
 }
 
 impl LayerTrait for Layer {
-    type Randomizer = Randomizer;
-
-    fn new(
+    fn new<T: RandomizerTrait>(
         number_of_inputs: u32,
         number_of_neurons: u32,
-        randomizer: &mut Self::Randomizer,
+        randomizer: &mut T,
     ) -> Layer {
         Layer {
             number_of_inputs,
@@ -106,6 +101,7 @@ impl LayerTrait for Layer {
 mod tests {
 
     use super::*;
+    use layer::randomization::randomizer::Randomizer;
 
     fn setup_layer() -> Layer {
         let mut randomizer = Randomizer::new();

@@ -3,16 +3,14 @@ extern crate randomization;
 use self::randomization::randomizer::RandomizerTrait;
 use layer::Layer;
 use layer::LayerTrait;
-use neural_network::randomization::randomizer::Randomizer;
 
 pub trait NeuralNetworkTrait {
     type Layer: LayerTrait;
-    type Randomizer: RandomizerTrait;
 
     fn new() -> Self;
-    fn new_with_specified_layers(
+    fn new_with_specified_layers<T: RandomizerTrait>(
         layers_definition: &[[usize; 2]],
-        randomizer: &mut Self::Randomizer,
+        randomizer: &mut T,
     ) -> Self;
     fn get_number_of_layers(&self) -> u32;
     fn get_layer(&self, index: usize) -> &Self::Layer;
@@ -26,7 +24,6 @@ pub struct NeuralNetwork {
 
 impl NeuralNetworkTrait for NeuralNetwork {
     type Layer = Layer;
-    type Randomizer = Randomizer;
 
     fn new() -> Self {
         Self { layers: Vec::new() }
@@ -34,9 +31,9 @@ impl NeuralNetworkTrait for NeuralNetwork {
     fn get_number_of_layers(&self) -> u32 {
         self.layers.len() as u32
     }
-    fn new_with_specified_layers(
+    fn new_with_specified_layers<T: RandomizerTrait>(
         layers_definition: &[[usize; 2]],
-        randomizer: &mut Self::Randomizer,
+        randomizer: &mut T,
     ) -> Self {
         let mut neural_network = NeuralNetwork::new();
 
@@ -96,6 +93,8 @@ impl NeuralNetworkTrait for NeuralNetwork {
 mod tests {
 
     use super::*;
+
+    use neural_network::randomization::randomizer::Randomizer;
 
     #[test]
     fn test_when_creating_an_empty_nn_it_has_no_layers() -> Result<(), String> {
@@ -179,6 +178,11 @@ mod tests {
         assert!(outputs[0] >= 0f64);
         assert!(outputs[0] <= 1f64);
 
+        Ok(())
+    }
+
+    #[test]
+    fn test_can_lock_down_behavior_of_neural_network() -> Result<(), String> {
         Ok(())
     }
 }

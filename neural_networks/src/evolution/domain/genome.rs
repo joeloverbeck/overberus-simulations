@@ -6,7 +6,6 @@ use std::fmt;
 use std::marker::PhantomData;
 
 pub trait GenomeTrait<T: NeuralNetworkTrait<U>, U: NeuronTrait> {
-    fn new(neural_network: T) -> Self;
     fn get_neural_network(&self) -> &T;
     fn get_neural_network_mut(&mut self) -> &mut T;
     fn get_fitness(&self) -> f64;
@@ -19,16 +18,8 @@ pub struct Genome<T: NeuralNetworkTrait<U>, U: NeuronTrait> {
     phantom: PhantomData<U>,
 }
 
-impl fmt::Debug for Genome<NeuralNetwork<Neuron>, Neuron> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "--Genome (fitness: {})--", self.fitness)?;
-        writeln!(f, "--> Neural network:")?;
-        writeln!(f, "{:#?}", self.neural_network)
-    }
-}
-
-impl<T: NeuralNetworkTrait<U>, U: NeuronTrait> GenomeTrait<T, U> for Genome<T, U> {
-    fn new(neural_network: T) -> Self
+impl<T: NeuralNetworkTrait<U>, U: NeuronTrait> Genome<T, U> {
+    pub fn new(neural_network: T) -> Self
     where
         T: NeuralNetworkTrait<U>,
     {
@@ -38,7 +29,17 @@ impl<T: NeuralNetworkTrait<U>, U: NeuronTrait> GenomeTrait<T, U> for Genome<T, U
             phantom: PhantomData,
         }
     }
+}
 
+impl fmt::Debug for Genome<NeuralNetwork<Neuron>, Neuron> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "--Genome (fitness: {})--", self.fitness)?;
+        writeln!(f, "--> Neural network:")?;
+        writeln!(f, "{:#?}", self.neural_network)
+    }
+}
+
+impl<T: NeuralNetworkTrait<U>, U: NeuronTrait> GenomeTrait<T, U> for Genome<T, U> {
     fn get_neural_network(&self) -> &T
     where
         T: NeuralNetworkTrait<U>,

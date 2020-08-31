@@ -55,10 +55,10 @@ impl Population<Genome<NeuralNetwork<Neuron>, Neuron>, NeuralNetwork<Neuron>, Ne
         }
     }
 
-    pub fn new_with_specified_layers<T: RandomizerTrait>(
+    pub fn new_with_specified_layers<U: RandomizerTrait>(
         number_of_neural_networks: u32,
         layer_definition: &[[usize; 2]],
-        randomizer: &mut T,
+        randomizer: &mut U,
     ) -> Result<Self, String>
     where
         Self: std::marker::Sized,

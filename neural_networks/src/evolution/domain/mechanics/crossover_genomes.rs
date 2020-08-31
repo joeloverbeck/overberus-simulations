@@ -1,11 +1,11 @@
 extern crate randomization;
 
 use self::randomization::randomizer::RandomizerTrait;
-use evolution::controllers::crossover_layers::crossover_layers;
 use evolution::domain::genome::Genome;
 use evolution::domain::genome::GenomeTrait;
 use evolution::domain::genome_couple::GenomeCouple;
 use evolution::domain::layer_couple::LayerCouple;
+use evolution::domain::mechanics::crossover_layers::crossover_layers;
 use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
 use neuron::Neuron;

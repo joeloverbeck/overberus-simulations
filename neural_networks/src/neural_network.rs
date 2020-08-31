@@ -8,11 +8,6 @@ use neuron::Neuron;
 pub trait NeuralNetworkTrait {
     type Layer: LayerTrait<Neuron>;
 
-    fn new() -> Self;
-    fn new_with_specified_layers<T: RandomizerTrait>(
-        layers_definition: &[[usize; 2]],
-        randomizer: &mut T,
-    ) -> Self;
     fn get_number_of_layers(&self) -> u32;
     fn get_layer(&self, index: usize) -> &Self::Layer;
     fn get_layers(&self) -> &Vec<Self::Layer>;
@@ -26,16 +21,18 @@ pub struct NeuralNetwork {
     layers: Vec<Layer<Neuron>>,
 }
 
-impl NeuralNetworkTrait for NeuralNetwork {
-    type Layer = Layer<Neuron>;
+impl Default for NeuralNetwork {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
-    fn new() -> Self {
+impl NeuralNetwork {
+    pub fn new() -> Self {
         Self { layers: Vec::new() }
     }
-    fn get_number_of_layers(&self) -> u32 {
-        self.layers.len() as u32
-    }
-    fn new_with_specified_layers<T: RandomizerTrait>(
+
+    pub fn new_with_specified_layers<T: RandomizerTrait>(
         layers_definition: &[[usize; 2]],
         randomizer: &mut T,
     ) -> Self {
@@ -51,6 +48,15 @@ impl NeuralNetworkTrait for NeuralNetwork {
 
         neural_network
     }
+}
+
+impl NeuralNetworkTrait for NeuralNetwork {
+    type Layer = Layer<Neuron>;
+
+    fn get_number_of_layers(&self) -> u32 {
+        self.layers.len() as u32
+    }
+
     fn get_layer(&self, index: usize) -> &Self::Layer {
         &self.layers[index]
     }

@@ -6,6 +6,7 @@ pub trait GenomeTrait<T: NeuralNetworkTrait> {
     fn new(neural_network: T) -> Self;
     fn get_neural_network(&self) -> &T;
     fn get_fitness(&self) -> f64;
+    fn set_fitness(&mut self, fitness: f64);
 }
 
 pub struct Genome<T: NeuralNetworkTrait> {
@@ -40,6 +41,9 @@ impl<T: NeuralNetworkTrait> GenomeTrait<T> for Genome<T> {
     }
     fn get_fitness(&self) -> f64 {
         self.fitness
+    }
+    fn set_fitness(&mut self, fitness: f64) {
+        self.fitness = fitness
     }
 }
 

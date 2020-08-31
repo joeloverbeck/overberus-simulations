@@ -1,7 +1,8 @@
 extern crate randomization;
 
 use self::randomization::randomizer::RandomizerTrait;
-use activation_functions::sigmoid::sigmoid;
+use neuron::Neuron;
+use neuron::NeuronTrait;
 
 pub trait LayerTrait {
     fn new<T: RandomizerTrait>(
@@ -11,37 +12,12 @@ pub trait LayerTrait {
     ) -> Layer;
     fn get_number_of_inputs(&self) -> u32;
     fn get_number_of_neurons(&self) -> u32;
-    fn get_number_of_weights(&self) -> u32;
-    fn get_number_of_biases(&self) -> u32;
     fn feed_forward(&self, inputs: &[f64]) -> Vec<f64>;
 }
 
 pub struct Layer {
     number_of_inputs: u32,
-    number_of_neurons: u32,
-    weights: Vec<Vec<f64>>,
-    biases: Vec<f64>,
-}
-
-impl Layer {
-    fn multiply_each_input_with_the_weights(&self, inputs: &[f64]) -> Vec<f64> {
-        self.weights
-            .iter()
-            .map(|ws| ws.iter().zip(inputs.iter()).map(|(w, x)| w * x).sum())
-            .collect()
-    }
-
-    fn sum_biases_and_weights(&self, inputs_and_weights_multiplied: Vec<f64>) -> Vec<f64> {
-        inputs_and_weights_multiplied
-            .iter()
-            .zip(self.biases.iter())
-            .map(|(wx, b)| wx + b)
-            .collect()
-    }
-
-    fn activate_weights(&self, prepared_weights: Vec<f64>) -> Vec<f64> {
-        prepared_weights.iter().map(|z| sigmoid(*z)).collect()
-    }
+    neurons: Vec<Neuron>,
 }
 
 impl LayerTrait for Layer {
@@ -52,16 +28,8 @@ impl LayerTrait for Layer {
     ) -> Layer {
         Layer {
             number_of_inputs,
-            number_of_neurons,
-            biases: (0..number_of_neurons)
-                .map(|_| randomizer.get_normal())
-                .collect(),
-            weights: (0..number_of_neurons)
-                .map(|_| {
-                    (0..number_of_inputs)
-                        .map(|_| randomizer.get_normal())
-                        .collect()
-                })
+            neurons: (0..number_of_neurons)
+                .map(|_| Neuron::new(number_of_inputs, randomizer))
                 .collect(),
         }
     }
@@ -71,15 +39,9 @@ impl LayerTrait for Layer {
     }
 
     fn get_number_of_neurons(&self) -> u32 {
-        self.number_of_neurons
+        self.neurons.len() as u32
     }
 
-    fn get_number_of_weights(&self) -> u32 {
-        self.weights.len() as u32
-    }
-    fn get_number_of_biases(&self) -> u32 {
-        self.biases.len() as u32
-    }
     fn feed_forward(&self, inputs: &[f64]) -> std::vec::Vec<f64> {
         // Sanity check
         if inputs.len() != self.number_of_inputs as usize {
@@ -90,9 +52,10 @@ impl LayerTrait for Layer {
             )
         }
 
-        self.activate_weights(
-            self.sum_biases_and_weights(self.multiply_each_input_with_the_weights(inputs)),
-        )
+        self.neurons
+            .iter()
+            .map(|neuron| neuron.activate(&inputs).unwrap())
+            .collect()
     }
 }
 
@@ -123,24 +86,6 @@ mod tests {
         let layer = setup_layer();
 
         assert_eq!(layer.get_number_of_neurons(), 2);
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_when_creating_a_layer_it_has_expected_number_of_weights() -> Result<(), String> {
-        let layer = setup_layer();
-
-        assert_eq!(layer.get_number_of_weights(), 2);
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_when_creating_a_layer_it_has_expected_number_of_biases() -> Result<(), String> {
-        let layer = setup_layer();
-
-        assert_eq!(layer.get_number_of_biases(), 2);
 
         Ok(())
     }

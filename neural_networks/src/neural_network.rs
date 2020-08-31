@@ -183,6 +183,29 @@ mod tests {
 
     #[test]
     fn test_can_lock_down_behavior_of_neural_network() -> Result<(), String> {
+        struct FakeRandomizer {}
+
+        impl RandomizerTrait for FakeRandomizer {
+            fn get_normal(&mut self) -> f64 {
+                0.4_f64
+            }
+        }
+
+        let mut randomizer = FakeRandomizer {};
+
+        let neural_network =
+            NeuralNetwork::new_with_specified_layers(&[[3, 2], [2, 2], [2, 2]], &mut randomizer);
+
+        let inputs = vec![0.0_f64, 1.0_f64, 0.0_f64];
+        let outputs = neural_network.propagate(&inputs)?;
+
+        assert_eq!(outputs.len(), 2);
+
+        assert!(outputs[0] >= 0.7265);
+        assert!(outputs[0] <= 0.7266);
+        assert!(outputs[1] >= 0.7265);
+        assert!(outputs[1] <= 0.7266);
+
         Ok(())
     }
 }

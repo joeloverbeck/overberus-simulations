@@ -16,6 +16,7 @@ pub trait PopulationTrait<T: GenomeTrait<U, V>, U: NeuralNetworkTrait<V>, V: Neu
     fn get_genome(&self, index: usize) -> Result<&T, String>;
     fn get_genome_mut(&mut self, index: usize) -> Result<&mut T, String>;
     fn get_sorted_index(&self) -> Vec<usize>;
+    fn get_midpoint(&self) -> u32;
 }
 
 pub struct Population<T: GenomeTrait<U, V>, U: NeuralNetworkTrait<V>, V: NeuronTrait> {
@@ -110,6 +111,9 @@ impl<T: GenomeTrait<U, V>, U: NeuralNetworkTrait<V>, V: NeuronTrait> PopulationT
                 .unwrap_or(std::cmp::Ordering::Equal)
         });
         index.iter().map(|(index, _)| *index).collect()
+    }
+    fn get_midpoint(&self) -> u32 {
+        self.get_size() % 2 + self.get_size() / 2
     }
 }
 
@@ -233,8 +237,8 @@ mod tests {
 
         let mut randomizer = Randomizer::new();
 
-        let layer1 = Layer::new(3, 2, &mut randomizer);
-        let layer2 = Layer::new(2, 1, &mut randomizer);
+        let layer1 = Layer::<Neuron>::create_layer(3, 2, &mut randomizer);
+        let layer2 = Layer::<Neuron>::create_layer(2, 1, &mut randomizer);
 
         neural_network1.add(layer1)?;
         neural_network1.add(layer2)?;
@@ -245,8 +249,8 @@ mod tests {
 
         let mut neural_network2 = NeuralNetwork::new();
 
-        let layer1 = Layer::new(3, 2, &mut randomizer);
-        let layer2 = Layer::new(2, 1, &mut randomizer);
+        let layer1 = Layer::<Neuron>::create_layer(3, 2, &mut randomizer);
+        let layer2 = Layer::<Neuron>::create_layer(2, 1, &mut randomizer);
 
         neural_network2.add(layer1)?;
         neural_network2.add(layer2)?;
@@ -291,8 +295,8 @@ mod tests {
 
         let mut randomizer = Randomizer::new();
 
-        let layer1 = Layer::new(3, 2, &mut randomizer);
-        let layer2 = Layer::new(2, 1, &mut randomizer);
+        let layer1 = Layer::<Neuron>::create_layer(3, 2, &mut randomizer);
+        let layer2 = Layer::<Neuron>::create_layer(2, 1, &mut randomizer);
 
         neural_network.add(layer1)?;
         neural_network.add(layer2)?;

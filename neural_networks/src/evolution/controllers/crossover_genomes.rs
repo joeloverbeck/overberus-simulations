@@ -4,6 +4,8 @@ use self::randomization::randomizer::RandomizerTrait;
 use evolution::controllers::crossover_layers::crossover_layers;
 use evolution::domain::genome::Genome;
 use evolution::domain::genome::GenomeTrait;
+use evolution::domain::genome_couple::GenomeCouple;
+use evolution::domain::layer_couple::LayerCouple;
 use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
 use neuron::Neuron;
@@ -12,20 +14,26 @@ type NN = NeuralNetwork<Neuron>;
 type GN = Genome<NN, Neuron>;
 
 pub fn crossover_genomes<T: RandomizerTrait>(
-    first_genome: &GN,
-    second_genome: &GN,
+    couple: GenomeCouple,
     randomizer: &mut T,
 ) -> Result<(GN, GN), String> {
     let mut first_child = NeuralNetwork::new();
     let mut second_child = NeuralNetwork::new();
 
-    for (first_parent, second_parent) in first_genome
+    for (first_layer, second_layer) in couple
+        .get_first_parent()
         .get_neural_network()
         .get_layers()
         .iter()
-        .zip(second_genome.get_neural_network().get_layers().iter())
+        .zip(
+            couple
+                .get_second_parent()
+                .get_neural_network()
+                .get_layers()
+                .iter(),
+        )
     {
-        let (c1, c2) = crossover_layers(first_parent, second_parent, randomizer)?;
+        let (c1, c2) = crossover_layers(LayerCouple::new(first_layer, second_layer)?, randomizer)?;
         first_child.add(c1)?;
         second_child.add(c2)?;
     }

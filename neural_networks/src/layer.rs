@@ -21,8 +21,8 @@ pub struct Layer<T: NeuronTrait> {
     neurons: Vec<T>,
 }
 
-impl Layer<Neuron> {
-    pub fn new<U: RandomizerTrait>(
+impl<T: NeuronTrait> Layer<T> {
+    pub fn create_layer<U: RandomizerTrait>(
         number_of_inputs: u32,
         number_of_neurons: u32,
         randomizer: &mut U,
@@ -91,7 +91,7 @@ mod tests {
     fn setup_layer() -> Layer<Neuron> {
         let mut randomizer = Randomizer::new();
 
-        Layer::new(3, 2, &mut randomizer)
+        Layer::<Neuron>::create_layer(3, 2, &mut randomizer)
     }
 
     #[test]

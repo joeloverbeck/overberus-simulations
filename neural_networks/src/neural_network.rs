@@ -38,9 +38,11 @@ impl NeuralNetwork<Neuron> {
         let mut neural_network = NeuralNetwork::new();
 
         for layer in layers_definition {
-            if let Err(error) =
-                neural_network.add(Layer::new(layer[0] as u32, layer[1] as u32, randomizer))
-            {
+            if let Err(error) = neural_network.add(Layer::<Neuron>::create_layer(
+                layer[0] as u32,
+                layer[1] as u32,
+                randomizer,
+            )) {
                 panic!("Failed to add a layer to Neural Network: {:?}", error);
             }
         }
@@ -142,9 +144,9 @@ mod tests {
 
         let mut neural_network = NeuralNetwork::new();
 
-        let layer1 = Layer::new(3, 2, &mut randomizer);
-        let layer2 = Layer::new(2, 1, &mut randomizer);
-        let layer3 = Layer::new(3, 1, &mut randomizer);
+        let layer1 = Layer::<Neuron>::create_layer(3, 2, &mut randomizer);
+        let layer2 = Layer::<Neuron>::create_layer(2, 1, &mut randomizer);
+        let layer3 = Layer::<Neuron>::create_layer(3, 1, &mut randomizer);
 
         if let Err(error) = neural_network.add(layer1) {
             panic!("Adding the first layer failed: {:?}", error);

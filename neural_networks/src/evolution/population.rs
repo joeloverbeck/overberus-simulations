@@ -9,7 +9,6 @@ pub trait PopulationTrait {
     type NeuralNetworkType: NeuralNetworkTrait;
 
     fn new() -> Self;
-    fn get_number_of_neural_networks(&self) -> u32;
     fn new_with_specified_layers(
         number_of_neural_networks: u32,
         layer_definition: &[[usize; 2]],
@@ -36,10 +35,6 @@ impl PopulationTrait for Population {
             neural_networks: Vec::new(),
             fitnesses: Vec::new(),
         }
-    }
-
-    fn get_number_of_neural_networks(&self) -> u32 {
-        self.neural_networks.len() as u32
     }
 
     fn new_with_specified_layers(
@@ -92,7 +87,7 @@ mod tests {
     fn test_can_create_empty_population_of_neural_networks() -> Result<(), String> {
         let population = Population::new();
 
-        assert_eq!(population.get_number_of_neural_networks(), 0);
+        assert_eq!(population.get_size(), 0);
 
         Ok(())
     }
@@ -201,8 +196,6 @@ mod tests {
         population.add(neural_network2)?;
 
         assert_eq!(population.get_size(), 2);
-
-        assert_eq!(population.get_number_of_neural_networks(), 2);
 
         Ok(())
     }

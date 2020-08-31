@@ -3,9 +3,10 @@ extern crate randomization;
 use self::randomization::randomizer::RandomizerTrait;
 use layer::Layer;
 use layer::LayerTrait;
+use neuron::Neuron;
 
 pub trait NeuralNetworkTrait {
-    type Layer: LayerTrait;
+    type Layer: LayerTrait<Neuron>;
 
     fn new() -> Self;
     fn new_with_specified_layers<T: RandomizerTrait>(
@@ -22,11 +23,11 @@ pub trait NeuralNetworkTrait {
 
 #[derive(Debug)]
 pub struct NeuralNetwork {
-    layers: Vec<Layer>,
+    layers: Vec<Layer<Neuron>>,
 }
 
 impl NeuralNetworkTrait for NeuralNetwork {
-    type Layer = Layer;
+    type Layer = Layer<Neuron>;
 
     fn new() -> Self {
         Self { layers: Vec::new() }

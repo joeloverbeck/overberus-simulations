@@ -5,25 +5,28 @@ use evolution::domain::constants::CROSSOVER_PROBABILITY;
 use neuron::Neuron;
 use neuron::NeuronTrait;
 
-pub trait LayerTrait {
+pub trait LayerTrait<T: NeuronTrait> {
     fn get_number_of_inputs(&self) -> u32;
     fn get_number_of_neurons(&self) -> u32;
+    fn get_neurons_mut(&mut self) -> &mut Vec<T>;
+    fn get_neuron(&self, index: usize) -> Result<&T, String>;
+    fn get_neuron_mut(&mut self, index: usize) -> std::result::Result<&mut T, std::string::String>;
     fn feed_forward(&self, inputs: &[f64]) -> Vec<f64>;
-    fn should_crossover<T: RandomizerTrait>(randomizer: &mut T) -> Result<bool, String>;
+    fn should_crossover<U: RandomizerTrait>(randomizer: &mut U) -> Result<bool, String>;
 }
 
 #[derive(Debug)]
-pub struct Layer {
+pub struct Layer<T: NeuronTrait> {
     number_of_inputs: u32,
-    neurons: Vec<Neuron>,
+    neurons: Vec<T>,
 }
 
-impl Layer {
-    pub fn new<T: RandomizerTrait>(
+impl Layer<Neuron> {
+    pub fn new<U: RandomizerTrait>(
         number_of_inputs: u32,
         number_of_neurons: u32,
-        randomizer: &mut T,
-    ) -> Layer {
+        randomizer: &mut U,
+    ) -> Layer<Neuron> {
         Layer {
             number_of_inputs,
             neurons: (0..number_of_neurons)
@@ -31,30 +34,27 @@ impl Layer {
                 .collect(),
         }
     }
-
-    pub fn get_neurons_mut(&mut self) -> &mut Vec<Neuron> {
-        &mut self.neurons
-    }
-
-    pub fn get_neuron(&self, index: usize) -> Result<&Neuron, String> {
-        Ok(&self.neurons[index])
-    }
-
-    pub fn get_neuron_mut(
-        &mut self,
-        index: usize,
-    ) -> std::result::Result<&mut Neuron, std::string::String> {
-        Ok(&mut self.neurons[index])
-    }
 }
 
-impl LayerTrait for Layer {
+impl<T: NeuronTrait> LayerTrait<T> for Layer<T> {
     fn get_number_of_inputs(&self) -> u32 {
         self.number_of_inputs
     }
 
     fn get_number_of_neurons(&self) -> u32 {
         self.neurons.len() as u32
+    }
+
+    fn get_neurons_mut(&mut self) -> &mut Vec<T> {
+        &mut self.neurons
+    }
+
+    fn get_neuron(&self, index: usize) -> Result<&T, String> {
+        Ok(&self.neurons[index])
+    }
+
+    fn get_neuron_mut(&mut self, index: usize) -> std::result::Result<&mut T, std::string::String> {
+        Ok(&mut self.neurons[index])
     }
 
     fn feed_forward(&self, inputs: &[f64]) -> std::vec::Vec<f64> {
@@ -73,9 +73,9 @@ impl LayerTrait for Layer {
             .collect()
     }
 
-    fn should_crossover<T>(randomizer: &mut T) -> std::result::Result<bool, std::string::String>
+    fn should_crossover<U>(randomizer: &mut U) -> std::result::Result<bool, std::string::String>
     where
-        T: RandomizerTrait,
+        U: RandomizerTrait,
     {
         Ok(randomizer.generate_f64() > 1f64 - CROSSOVER_PROBABILITY)
     }
@@ -88,7 +88,7 @@ mod tests {
     use super::*;
     use layer::randomization::randomizer::Randomizer;
 
-    fn setup_layer() -> Layer {
+    fn setup_layer() -> Layer<Neuron> {
         let mut randomizer = Randomizer::new();
 
         Layer::new(3, 2, &mut randomizer)

@@ -2,6 +2,7 @@ extern crate randomization;
 
 use self::randomization::randomizer::RandomizerTrait;
 use evolution::domain::genome::GenomeTrait;
+use layer::LayerTrait;
 use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
 use neuron::NeuronTrait;

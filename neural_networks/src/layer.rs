@@ -15,6 +15,7 @@ pub trait LayerTrait {
     fn feed_forward(&self, inputs: &[f64]) -> Vec<f64>;
 }
 
+#[derive(Debug)]
 pub struct Layer {
     number_of_inputs: u32,
     neurons: Vec<Neuron>,

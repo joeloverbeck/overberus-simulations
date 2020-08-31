@@ -1,0 +1,10 @@
+[package]
+name = "training" # the name of the package
+version = "0.1.0"    # the current version, obeying semver
+authors = ["Joel Overbeck"]
+
+
+[dependencies]
+neural_networks = { path = "../neural_networks" }
+randomization = { path = "../randomization" }
+

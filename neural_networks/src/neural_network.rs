@@ -18,6 +18,7 @@ pub trait NeuralNetworkTrait {
     fn propagate(&self, inputs: &[f64]) -> Result<Vec<f64>, String>;
 }
 
+#[derive(Debug)]
 pub struct NeuralNetwork {
     layers: Vec<Layer>,
 }
@@ -112,7 +113,7 @@ mod tests {
 
         let nn =
             NeuralNetwork::new_with_specified_layers(&[[4, 3], [3, 2], [2, 1]], &mut randomizer);
-        assert_eq!(nn.layers.len(), 3);
+        assert_eq!(nn.get_number_of_layers(), 3);
         assert_eq!(nn.get_layer(0).get_number_of_inputs(), 4);
         assert_eq!(nn.get_layer(0).get_number_of_neurons(), 3);
         assert_eq!(nn.get_layer(2).get_number_of_inputs(), 2);

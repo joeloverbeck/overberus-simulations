@@ -3,6 +3,8 @@ extern crate randomization;
 use self::randomization::randomizer::RandomizerTrait;
 use activation_functions::sigmoid::sigmoid;
 
+use std::fmt;
+
 pub trait NeuronTrait {
     fn new<T: RandomizerTrait>(number_of_inputs: u32, randomizer: &mut T) -> Self;
     fn get_number_of_weights(&self) -> u32;
@@ -12,6 +14,20 @@ pub trait NeuronTrait {
 pub struct Neuron {
     weights: Vec<f64>,
     bias: f64,
+}
+
+impl fmt::Debug for Neuron {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "--Neuron (bias: {})--", self.bias)?;
+
+        writeln!(f, "--> Weights:")?;
+
+        for weight in &self.weights {
+            writeln!(f, "    {:#?}", weight)?;
+        }
+
+        write!(f, "")
+    }
 }
 
 impl NeuronTrait for Neuron {

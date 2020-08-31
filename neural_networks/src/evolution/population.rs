@@ -1,46 +1,56 @@
 extern crate randomization;
 
-use self::randomization::randomizer::{Randomizer, RandomizerTrait};
+use self::randomization::randomizer::RandomizerTrait;
+use evolution::genome::Genome;
+use evolution::genome::GenomeTrait;
 use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
+use std::fmt;
+use std::marker::PhantomData;
 
-pub trait PopulationTrait {
-    type RandomizerType: RandomizerTrait;
-    type NeuralNetworkType: NeuralNetworkTrait;
-
-    fn new() -> Self;
-    fn new_with_specified_layers(
-        number_of_neural_networks: u32,
-        layer_definition: &[[usize; 2]],
-        randomizer: &mut Self::RandomizerType,
-    ) -> Result<Self, String>
-    where
-        Self: std::marker::Sized;
+pub trait PopulationTrait<T: GenomeTrait<U>, U: NeuralNetworkTrait> {
     fn get_size(&self) -> u32;
-    fn add(&mut self, neural_network: Self::NeuralNetworkType) -> Result<(), String>;
-    fn get_neural_network(&self, index: usize) -> &Self::NeuralNetworkType;
+    fn add(&mut self, genome: T) -> Result<(), String>;
+    fn get_genome(&self, index: usize) -> &T;
 }
 
-pub struct Population {
-    neural_networks: Vec<NeuralNetwork>,
-    fitnesses: Vec<f64>,
+pub struct Population<T: GenomeTrait<U>, U: NeuralNetworkTrait> {
+    genomes: Vec<T>,
+    phantom: PhantomData<U>,
 }
 
-impl PopulationTrait for Population {
-    type RandomizerType = Randomizer;
-    type NeuralNetworkType = NeuralNetwork;
+impl fmt::Debug for Population<Genome<NeuralNetwork>, NeuralNetwork> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "--Population (size: {})--", self.get_size())?;
 
-    fn new() -> Self {
-        Population {
-            neural_networks: Vec::new(),
-            fitnesses: Vec::new(),
+        writeln!(f, "--> Genomes:")?;
+
+        for genome in &self.genomes {
+            write!(f, "{:#?}", genome)?;
+        }
+
+        writeln!(f)
+    }
+}
+
+impl Default for Population<Genome<NeuralNetwork>, NeuralNetwork> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Population<Genome<NeuralNetwork>, NeuralNetwork> {
+    pub fn new() -> Self {
+        Population::<Genome<NeuralNetwork>, NeuralNetwork> {
+            genomes: Vec::new(),
+            phantom: PhantomData,
         }
     }
 
-    fn new_with_specified_layers(
+    pub fn new_with_specified_layers<T: RandomizerTrait>(
         number_of_neural_networks: u32,
         layer_definition: &[[usize; 2]],
-        randomizer: &mut Self::RandomizerType,
+        randomizer: &mut T,
     ) -> Result<Self, String>
     where
         Self: std::marker::Sized,
@@ -48,37 +58,37 @@ impl PopulationTrait for Population {
         let mut population = Population::new();
 
         for _ in 0..number_of_neural_networks {
-            population.add(NeuralNetwork::new_with_specified_layers(
+            let genome = Genome::new(NeuralNetwork::new_with_specified_layers(
                 layer_definition,
                 randomizer,
-            ))?;
+            ));
+
+            population.add(genome)?;
         }
 
         Ok(population)
     }
+}
 
+impl<T: GenomeTrait<U>, U: NeuralNetworkTrait> PopulationTrait<T, U> for Population<T, U> {
     fn get_size(&self) -> u32 {
-        self.neural_networks.len() as u32
+        self.genomes.len() as u32
     }
 
-    fn add(
-        &mut self,
-        neural_network: Self::NeuralNetworkType,
-    ) -> std::result::Result<(), std::string::String> {
-        self.neural_networks.push(neural_network);
-
-        self.fitnesses.push(0f64);
+    fn add(&mut self, genome: T) -> std::result::Result<(), std::string::String> {
+        self.genomes.push(genome);
 
         Ok(())
     }
-    fn get_neural_network(&self, index: usize) -> &Self::NeuralNetworkType {
-        &self.neural_networks[index]
+    fn get_genome(&self, index: usize) -> &T {
+        &self.genomes[index]
     }
 }
 
 #[cfg(test)]
 mod tests {
 
+    use self::randomization::randomizer::Randomizer;
     use super::*;
     use layer::Layer;
     use layer::LayerTrait;
@@ -122,17 +132,25 @@ mod tests {
         let population =
             Population::new_with_specified_layers(10, &[[4, 3], [3, 2], [2, 1]], &mut randomizer)?;
 
-        assert_eq!(population.get_neural_network(0).get_number_of_layers(), 3);
         assert_eq!(
             population
-                .get_neural_network(0)
+                .get_genome(0)
+                .get_neural_network()
+                .get_number_of_layers(),
+            3
+        );
+        assert_eq!(
+            population
+                .get_genome(0)
+                .get_neural_network()
                 .get_layer(0)
                 .get_number_of_inputs(),
             4
         );
         assert_eq!(
             population
-                .get_neural_network(0)
+                .get_genome(0)
+                .get_neural_network()
                 .get_layer(0)
                 .get_number_of_neurons(),
             3
@@ -149,17 +167,25 @@ mod tests {
         let population =
             Population::new_with_specified_layers(10, &[[4, 3], [3, 2], [2, 1]], &mut randomizer)?;
 
-        assert_eq!(population.get_neural_network(9).get_number_of_layers(), 3);
         assert_eq!(
             population
-                .get_neural_network(9)
+                .get_genome(9)
+                .get_neural_network()
+                .get_number_of_layers(),
+            3
+        );
+        assert_eq!(
+            population
+                .get_genome(9)
+                .get_neural_network()
                 .get_layer(2)
                 .get_number_of_inputs(),
             2
         );
         assert_eq!(
             population
-                .get_neural_network(9)
+                .get_genome(9)
+                .get_neural_network()
                 .get_layer(2)
                 .get_number_of_neurons(),
             1
@@ -181,7 +207,7 @@ mod tests {
         neural_network1.add(layer1)?;
         neural_network1.add(layer2)?;
 
-        population.add(neural_network1)?;
+        population.add(Genome::new(neural_network1))?;
 
         assert_eq!(population.get_size(), 1);
 
@@ -193,10 +219,15 @@ mod tests {
         neural_network2.add(layer1)?;
         neural_network2.add(layer2)?;
 
-        population.add(neural_network2)?;
+        population.add(Genome::new(neural_network2))?;
 
         assert_eq!(population.get_size(), 2);
 
+        Ok(())
+    }
+
+    #[test]
+    fn test_can_get_the_sorted_indexes_of_the_population() -> Result<(), String> {
         Ok(())
     }
 }

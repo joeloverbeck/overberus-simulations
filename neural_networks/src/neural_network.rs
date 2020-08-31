@@ -4,37 +4,36 @@ use self::randomization::randomizer::RandomizerTrait;
 use layer::Layer;
 use layer::LayerTrait;
 use neuron::Neuron;
+use neuron::NeuronTrait;
 
-pub trait NeuralNetworkTrait {
-    type Layer: LayerTrait<Neuron>;
-
+pub trait NeuralNetworkTrait<T: NeuronTrait> {
     fn get_number_of_layers(&self) -> u32;
-    fn get_layer(&self, index: usize) -> &Self::Layer;
-    fn get_layers(&self) -> &Vec<Self::Layer>;
-    fn get_layers_mut(&mut self) -> &mut Vec<Self::Layer>;
-    fn add(&mut self, layer: Self::Layer) -> Result<(), String>;
+    fn get_layer(&self, index: usize) -> &Layer<T>;
+    fn get_layers(&self) -> &Vec<Layer<T>>;
+    fn get_layers_mut(&mut self) -> &mut Vec<Layer<T>>;
+    fn add(&mut self, layer: Layer<T>) -> Result<(), String>;
     fn propagate(&self, inputs: &[f64]) -> Result<Vec<f64>, String>;
 }
 
 #[derive(Debug)]
-pub struct NeuralNetwork {
-    layers: Vec<Layer<Neuron>>,
+pub struct NeuralNetwork<T: NeuronTrait> {
+    layers: Vec<Layer<T>>,
 }
 
-impl Default for NeuralNetwork {
+impl Default for NeuralNetwork<Neuron> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl NeuralNetwork {
+impl NeuralNetwork<Neuron> {
     pub fn new() -> Self {
         Self { layers: Vec::new() }
     }
 
-    pub fn new_with_specified_layers<T: RandomizerTrait>(
+    pub fn new_with_specified_layers<U: RandomizerTrait>(
         layers_definition: &[[usize; 2]],
-        randomizer: &mut T,
+        randomizer: &mut U,
     ) -> Self {
         let mut neural_network = NeuralNetwork::new();
 
@@ -50,18 +49,16 @@ impl NeuralNetwork {
     }
 }
 
-impl NeuralNetworkTrait for NeuralNetwork {
-    type Layer = Layer<Neuron>;
-
+impl<T: NeuronTrait> NeuralNetworkTrait<T> for NeuralNetwork<T> {
     fn get_number_of_layers(&self) -> u32 {
         self.layers.len() as u32
     }
 
-    fn get_layer(&self, index: usize) -> &Self::Layer {
+    fn get_layer(&self, index: usize) -> &Layer<T> {
         &self.layers[index]
     }
 
-    fn add(&mut self, layer: Self::Layer) -> std::result::Result<(), std::string::String> {
+    fn add(&mut self, layer: Layer<T>) -> std::result::Result<(), std::string::String> {
         if self.layers.is_empty()
             || self.layers.last().unwrap().get_number_of_neurons() == layer.get_number_of_inputs()
         {
@@ -96,10 +93,10 @@ impl NeuralNetworkTrait for NeuralNetwork {
 
         Ok(this_out)
     }
-    fn get_layers(&self) -> &Vec<Self::Layer> {
+    fn get_layers(&self) -> &Vec<Layer<T>> {
         &self.layers
     }
-    fn get_layers_mut(&mut self) -> &mut Vec<Self::Layer> {
+    fn get_layers_mut(&mut self) -> &mut Vec<Layer<T>> {
         &mut self.layers
     }
 }

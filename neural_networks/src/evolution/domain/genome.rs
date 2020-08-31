@@ -1,8 +1,11 @@
 use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
+use neuron::Neuron;
+use neuron::NeuronTrait;
 use std::fmt;
+use std::marker::PhantomData;
 
-pub trait GenomeTrait<T: NeuralNetworkTrait> {
+pub trait GenomeTrait<T: NeuralNetworkTrait<U>, U: NeuronTrait> {
     fn new(neural_network: T) -> Self;
     fn get_neural_network(&self) -> &T;
     fn get_neural_network_mut(&mut self) -> &mut T;
@@ -10,12 +13,13 @@ pub trait GenomeTrait<T: NeuralNetworkTrait> {
     fn set_fitness(&mut self, fitness: f64);
 }
 
-pub struct Genome<T: NeuralNetworkTrait> {
+pub struct Genome<T: NeuralNetworkTrait<U>, U: NeuronTrait> {
     neural_network: T,
     fitness: f64,
+    phantom: PhantomData<U>,
 }
 
-impl fmt::Debug for Genome<NeuralNetwork> {
+impl fmt::Debug for Genome<NeuralNetwork<Neuron>, Neuron> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "--Genome (fitness: {})--", self.fitness)?;
         writeln!(f, "--> Neural network:")?;
@@ -23,20 +27,21 @@ impl fmt::Debug for Genome<NeuralNetwork> {
     }
 }
 
-impl<T: NeuralNetworkTrait> GenomeTrait<T> for Genome<T> {
+impl<T: NeuralNetworkTrait<U>, U: NeuronTrait> GenomeTrait<T, U> for Genome<T, U> {
     fn new(neural_network: T) -> Self
     where
-        T: NeuralNetworkTrait,
+        T: NeuralNetworkTrait<U>,
     {
         Genome {
             neural_network,
             fitness: 0f64,
+            phantom: PhantomData,
         }
     }
 
     fn get_neural_network(&self) -> &T
     where
-        T: NeuralNetworkTrait,
+        T: NeuralNetworkTrait<U>,
     {
         &self.neural_network
     }
@@ -69,7 +74,7 @@ mod tests {
         let neural_network =
             NeuralNetwork::new_with_specified_layers(&[[4, 3], [3, 2], [2, 1]], &mut randomizer);
 
-        let genome = Genome::<NeuralNetwork>::new(neural_network);
+        let genome = Genome::new(neural_network);
 
         assert_eq!(genome.get_neural_network().get_number_of_layers(), 3);
 

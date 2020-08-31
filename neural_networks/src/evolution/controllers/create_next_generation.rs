@@ -6,11 +6,15 @@ use evolution::domain::genome::Genome;
 use evolution::domain::population::Population;
 use evolution::domain::population::PopulationTrait;
 use neural_network::NeuralNetwork;
+use neuron::Neuron;
+
+type NN = NeuralNetwork<Neuron>;
+type GN = Genome<NN, Neuron>;
 
 pub fn create_next_generation<T: RandomizerTrait>(
-    population: &Population<Genome<NeuralNetwork>, NeuralNetwork>,
+    population: &Population<GN, NN, Neuron>,
     randomizer: &mut T,
-) -> Result<Population<Genome<NeuralNetwork>, NeuralNetwork>, String> {
+) -> Result<Population<GN, NN, Neuron>, String> {
     let mut next_generation = Population::new();
 
     let sorted_index = population.get_sorted_index();

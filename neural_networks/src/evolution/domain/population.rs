@@ -5,10 +5,12 @@ use evolution::domain::genome::Genome;
 use evolution::domain::genome::GenomeTrait;
 use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
+use neuron::Neuron;
+use neuron::NeuronTrait;
 use std::fmt;
 use std::marker::PhantomData;
 
-pub trait PopulationTrait<T: GenomeTrait<U>, U: NeuralNetworkTrait> {
+pub trait PopulationTrait<T: GenomeTrait<U, V>, U: NeuralNetworkTrait<V>, V: NeuronTrait> {
     fn get_size(&self) -> u32;
     fn add(&mut self, genome: T) -> Result<(), String>;
     fn get_genome(&self, index: usize) -> Result<&T, String>;
@@ -16,12 +18,15 @@ pub trait PopulationTrait<T: GenomeTrait<U>, U: NeuralNetworkTrait> {
     fn get_sorted_index(&self) -> Vec<usize>;
 }
 
-pub struct Population<T: GenomeTrait<U>, U: NeuralNetworkTrait> {
+pub struct Population<T: GenomeTrait<U, V>, U: NeuralNetworkTrait<V>, V: NeuronTrait> {
     genomes: Vec<T>,
-    phantom: PhantomData<U>,
+    phantom_u: PhantomData<U>,
+    phantom_v: PhantomData<V>,
 }
 
-impl fmt::Debug for Population<Genome<NeuralNetwork>, NeuralNetwork> {
+impl fmt::Debug
+    for Population<Genome<NeuralNetwork<Neuron>, Neuron>, NeuralNetwork<Neuron>, Neuron>
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "--Population (size: {})--", self.get_size())?;
 
@@ -35,17 +40,18 @@ impl fmt::Debug for Population<Genome<NeuralNetwork>, NeuralNetwork> {
     }
 }
 
-impl Default for Population<Genome<NeuralNetwork>, NeuralNetwork> {
+impl Default for Population<Genome<NeuralNetwork<Neuron>, Neuron>, NeuralNetwork<Neuron>, Neuron> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Population<Genome<NeuralNetwork>, NeuralNetwork> {
+impl Population<Genome<NeuralNetwork<Neuron>, Neuron>, NeuralNetwork<Neuron>, Neuron> {
     pub fn new() -> Self {
-        Population::<Genome<NeuralNetwork>, NeuralNetwork> {
+        Population::<Genome<NeuralNetwork<Neuron>, Neuron>, NeuralNetwork<Neuron>, Neuron> {
             genomes: Vec::new(),
-            phantom: PhantomData,
+            phantom_u: PhantomData,
+            phantom_v: PhantomData,
         }
     }
 
@@ -72,7 +78,9 @@ impl Population<Genome<NeuralNetwork>, NeuralNetwork> {
     }
 }
 
-impl<T: GenomeTrait<U>, U: NeuralNetworkTrait> PopulationTrait<T, U> for Population<T, U> {
+impl<T: GenomeTrait<U, V>, U: NeuralNetworkTrait<V>, V: NeuronTrait> PopulationTrait<T, U, V>
+    for Population<T, U, V>
+{
     fn get_size(&self) -> u32 {
         self.genomes.len() as u32
     }
@@ -113,6 +121,7 @@ mod tests {
     use evolution::controllers::create_next_generation::create_next_generation;
     use layer::Layer;
     use layer::LayerTrait;
+    use neuron::Neuron;
 
     #[test]
     fn test_can_create_empty_population_of_neural_networks() -> Result<(), String> {
@@ -215,8 +224,10 @@ mod tests {
         Ok(())
     }
 
-    fn setup_manual_population() -> Result<Population<Genome<NeuralNetwork>, NeuralNetwork>, String>
-    {
+    fn setup_manual_population() -> Result<
+        Population<Genome<NeuralNetwork<Neuron>, Neuron>, NeuralNetwork<Neuron>, Neuron>,
+        String,
+    > {
         let mut population = Population::new();
         let mut neural_network1 = NeuralNetwork::new();
 

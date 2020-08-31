@@ -6,12 +6,16 @@ use evolution::domain::genome::Genome;
 use evolution::domain::genome::GenomeTrait;
 use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
+use neuron::Neuron;
+
+type NN = NeuralNetwork<Neuron>;
+type GN = Genome<NN, Neuron>;
 
 pub fn crossover_genomes<T: RandomizerTrait>(
-    first_genome: &Genome<NeuralNetwork>,
-    second_genome: &Genome<NeuralNetwork>,
+    first_genome: &GN,
+    second_genome: &GN,
     randomizer: &mut T,
-) -> Result<(Genome<NeuralNetwork>, Genome<NeuralNetwork>), String> {
+) -> Result<(GN, GN), String> {
     let mut first_child = NeuralNetwork::new();
     let mut second_child = NeuralNetwork::new();
 

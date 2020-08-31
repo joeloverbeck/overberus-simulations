@@ -5,9 +5,10 @@ use evolution::domain::genome::GenomeTrait;
 use layer::LayerTrait;
 use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
+use neuron::Neuron;
 use neuron::NeuronTrait;
 
-pub fn mutate_genome<T: GenomeTrait<NeuralNetwork>, U: RandomizerTrait>(
+pub fn mutate_genome<T: GenomeTrait<NeuralNetwork<Neuron>, Neuron>, U: RandomizerTrait>(
     genome: &mut T,
     randomizer: &mut U,
 ) -> Result<(), String> {

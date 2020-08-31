@@ -2,6 +2,7 @@ extern crate randomization;
 
 use self::randomization::randomizer::RandomizerTrait;
 use activation_functions::sigmoid::sigmoid;
+use evolution::domain::constants::MUTATION_PROBABILITY;
 
 use std::fmt;
 
@@ -13,6 +14,8 @@ pub trait NeuronTrait {
     fn set_bias(&mut self, bias: f64);
     fn get_weight(&self, index: usize) -> Result<f64, String>;
     fn set_weight(&mut self, index: usize, weight: f64) -> Result<(), String>;
+    fn should_mutate<T: RandomizerTrait>(randomizer: &mut T) -> Result<bool, String>;
+    fn mutate<T: RandomizerTrait>(&mut self, randomizer: &mut T) -> Result<(), String>;
 }
 
 pub struct Neuron {
@@ -61,21 +64,53 @@ impl NeuronTrait for Neuron {
                 + self.bias,
         ))
     }
+
     fn set_bias(&mut self, bias: f64) {
         self.bias = bias
     }
+
     fn get_bias(&self) -> f64 {
         self.bias
     }
+
     fn get_weight(&self, index: usize) -> std::result::Result<f64, std::string::String> {
         Ok(self.weights[index])
     }
+
     fn set_weight(
         &mut self,
         index: usize,
         weight: f64,
     ) -> std::result::Result<(), std::string::String> {
-        Ok(self.weights[index] = weight)
+        self.weights[index] = weight;
+
+        Ok(())
+    }
+
+    fn should_mutate<T>(randomizer: &mut T) -> std::result::Result<bool, std::string::String>
+    where
+        T: RandomizerTrait,
+    {
+        Ok(randomizer.generate_f64() > 1f64 - MUTATION_PROBABILITY)
+    }
+
+    fn mutate<T>(&mut self, randomizer: &mut T) -> std::result::Result<(), std::string::String>
+    where
+        T: RandomizerTrait,
+    {
+        if Neuron::should_mutate(randomizer)? {
+            self.bias = randomizer.get_normal();
+        }
+
+        // Ask for the possibility of mutation for each weight in this neuron.
+        for index in 0..self.weights.len() {
+            if Neuron::should_mutate(randomizer)? {
+                // Mutate corresponding weight.
+                self.weights[index] = randomizer.get_normal();
+            }
+        }
+
+        Ok(())
     }
 }
 

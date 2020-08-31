@@ -1,8 +1,8 @@
 extern crate randomization;
 
 use self::randomization::randomizer::RandomizerTrait;
-use evolution::genome::Genome;
-use evolution::genome::GenomeTrait;
+use evolution::domain::genome::Genome;
+use evolution::domain::genome::GenomeTrait;
 use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
 use std::fmt;
@@ -27,8 +27,8 @@ impl fmt::Debug for Population<Genome<NeuralNetwork>, NeuralNetwork> {
 
         writeln!(f, "--> Genomes:")?;
 
-        for genome in &self.genomes {
-            write!(f, "{:#?}", genome)?;
+        for (index, genome) in self.genomes.iter().enumerate() {
+            write!(f, "#{:?} {:#?}", index, genome)?;
         }
 
         writeln!(f)
@@ -70,36 +70,6 @@ impl Population<Genome<NeuralNetwork>, NeuralNetwork> {
 
         Ok(population)
     }
-
-    fn create_next_generation<T: RandomizerTrait>(
-        &self,
-        randomizer: &mut T,
-    ) -> Result<Population<Genome<NeuralNetwork>, NeuralNetwork>, String> {
-        let mut next_generation = Population::new();
-
-        let sorted_index = self.get_sorted_index();
-
-        let mid = self.get_size() % 2 + self.get_size() / 2;
-
-        for index in 0..mid {
-            let first_parent = self.get_genome(sorted_index[index as usize])?;
-            let second_parent = self.get_genome(sorted_index[(index + 1) as usize])?;
-
-            let (mut first_child, mut second_child) =
-                first_parent.crossover(second_parent, randomizer)?;
-
-            first_child.mutate()?;
-            second_child.mutate()?;
-
-            next_generation.add(first_child)?;
-
-            if !(index == mid - 1 && self.get_size() % 2 == 1) {
-                next_generation.add(second_child)?;
-            }
-        }
-
-        Ok(next_generation)
-    }
 }
 
 impl<T: GenomeTrait<U>, U: NeuralNetworkTrait> PopulationTrait<T, U> for Population<T, U> {
@@ -140,6 +110,7 @@ mod tests {
 
     use self::randomization::randomizer::Randomizer;
     use super::*;
+    use evolution::controllers::create_next_generation::create_next_generation;
     use layer::Layer;
     use layer::LayerTrait;
 
@@ -335,7 +306,7 @@ mod tests {
 
         let mut randomizer = Randomizer::new();
 
-        let next_generation = population.create_next_generation(&mut randomizer)?;
+        let next_generation = create_next_generation(&population, &mut randomizer)?;
 
         assert_eq!(next_generation.get_size(), population.get_size());
 

@@ -1,3 +1,2 @@
-pub mod constants;
-pub mod genome;
-pub mod population;
+pub mod controllers;
+pub mod domain;

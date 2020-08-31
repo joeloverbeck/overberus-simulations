@@ -15,9 +15,9 @@ pub trait NeuralNetworkTrait {
     fn get_number_of_layers(&self) -> u32;
     fn get_layer(&self, index: usize) -> &Self::Layer;
     fn get_layers(&self) -> &Vec<Self::Layer>;
+    fn get_layers_mut(&mut self) -> &mut Vec<Self::Layer>;
     fn add(&mut self, layer: Self::Layer) -> Result<(), String>;
     fn propagate(&self, inputs: &[f64]) -> Result<Vec<f64>, String>;
-    fn mutate(&mut self) -> Result<(), String>;
 }
 
 #[derive(Debug)]
@@ -92,12 +92,8 @@ impl NeuralNetworkTrait for NeuralNetwork {
     fn get_layers(&self) -> &Vec<Self::Layer> {
         &self.layers
     }
-    fn mutate(&mut self) -> std::result::Result<(), std::string::String> {
-        for layer in &mut self.layers {
-            layer.mutate()?;
-        }
-
-        Ok(())
+    fn get_layers_mut(&mut self) -> &mut Vec<Self::Layer> {
+        &mut self.layers
     }
 }
 

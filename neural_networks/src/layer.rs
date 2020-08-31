@@ -1,8 +1,7 @@
 extern crate randomization;
 
-use evolution::constants::MUTATION_PROBABILITY;
 use self::randomization::randomizer::RandomizerTrait;
-use evolution::constants::CROSSOVER_PROBABILITY;
+use evolution::domain::constants::CROSSOVER_PROBABILITY;
 use neuron::Neuron;
 use neuron::NeuronTrait;
 
@@ -16,7 +15,6 @@ pub trait LayerTrait {
     fn get_number_of_neurons(&self) -> u32;
     fn feed_forward(&self, inputs: &[f64]) -> Vec<f64>;
     fn should_crossover<T: RandomizerTrait>(randomizer: &mut T) -> Result<bool, String>;
-    fn should_mutate<T: RandomizerTrait>(randomizer: &mut T) -> Result<bool, String>;
 }
 
 #[derive(Debug)]
@@ -26,10 +24,6 @@ pub struct Layer {
 }
 
 impl Layer {
-    pub fn mutate(&self) -> Result<(), String> {
-        todo!()
-    }
-
     pub fn crossover<T: RandomizerTrait>(
         &self,
         other: &Layer,
@@ -80,6 +74,10 @@ impl Layer {
         }
 
         Ok((first_child, second_child))
+    }
+
+    pub fn get_neurons_mut(&mut self) -> &mut Vec<Neuron> {
+        &mut self.neurons
     }
 
     pub fn get_neuron(&self, index: usize) -> Result<&Neuron, String> {
@@ -137,10 +135,6 @@ impl LayerTrait for Layer {
         T: RandomizerTrait,
     {
         Ok(randomizer.generate_f64() > 1f64 - CROSSOVER_PROBABILITY)
-    }
-
-    fn should_mutate<T>(randomizer: &mut T) -> std::result::Result<bool, std::string::String> where T: RandomizerTrait { 
-        Ok(randomizer.generate_f64() > 1f64 - MUTATION_PROBABILITY)
     }
 }
 

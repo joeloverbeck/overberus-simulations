@@ -1,6 +1,3 @@
-extern crate randomization;
-use self::randomization::randomizer::RandomizerTrait;
-
 use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
 use std::fmt;
@@ -8,38 +5,14 @@ use std::fmt;
 pub trait GenomeTrait<T: NeuralNetworkTrait> {
     fn new(neural_network: T) -> Self;
     fn get_neural_network(&self) -> &T;
+    fn get_neural_network_mut(&mut self) -> &mut T;
     fn get_fitness(&self) -> f64;
     fn set_fitness(&mut self, fitness: f64);
-    fn mutate(&mut self) -> Result<(), String>;
 }
 
 pub struct Genome<T: NeuralNetworkTrait> {
     neural_network: T,
     fitness: f64,
-}
-
-impl Genome<NeuralNetwork> {
-    pub fn crossover<T: RandomizerTrait>(
-        &self,
-        other: &Genome<NeuralNetwork>,
-        randomizer: &mut T,
-    ) -> Result<(Genome<NeuralNetwork>, Genome<NeuralNetwork>), String> {
-        let mut first_child = NeuralNetwork::new();
-        let mut second_child = NeuralNetwork::new();
-
-        for (first_parent, second_parent) in self
-            .neural_network
-            .get_layers()
-            .iter()
-            .zip(other.get_neural_network().get_layers().iter())
-        {
-            let (c1, c2) = first_parent.crossover(second_parent, randomizer)?;
-            first_child.add(c1)?;
-            second_child.add(c2)?;
-        }
-
-        Ok((Genome::new(first_child), Genome::new(second_child)))
-    }
 }
 
 impl fmt::Debug for Genome<NeuralNetwork> {
@@ -73,9 +46,9 @@ impl<T: NeuralNetworkTrait> GenomeTrait<T> for Genome<T> {
     fn set_fitness(&mut self, fitness: f64) {
         self.fitness = fitness
     }
-    fn mutate(&mut self) -> std::result::Result<(), std::string::String> {
-        // This only delegates to the neural network.
-        self.neural_network.mutate()
+
+    fn get_neural_network_mut(&mut self) -> &mut T {
+        &mut self.neural_network
     }
 }
 

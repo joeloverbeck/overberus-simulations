@@ -6,11 +6,6 @@ use neuron::Neuron;
 use neuron::NeuronTrait;
 
 pub trait LayerTrait {
-    fn new<T: RandomizerTrait>(
-        number_of_inputs: u32,
-        number_of_neurons: u32,
-        randomizer: &mut T,
-    ) -> Layer;
     fn get_number_of_inputs(&self) -> u32;
     fn get_number_of_neurons(&self) -> u32;
     fn feed_forward(&self, inputs: &[f64]) -> Vec<f64>;
@@ -24,56 +19,17 @@ pub struct Layer {
 }
 
 impl Layer {
-    pub fn crossover<T: RandomizerTrait>(
-        &self,
-        other: &Layer,
+    pub fn new<T: RandomizerTrait>(
+        number_of_inputs: u32,
+        number_of_neurons: u32,
         randomizer: &mut T,
-    ) -> Result<(Layer, Layer), String> {
-        let mut first_child =
-            Layer::new(self.number_of_inputs, self.neurons.len() as u32, randomizer);
-        let mut second_child =
-            Layer::new(self.number_of_inputs, self.neurons.len() as u32, randomizer);
-
-        // Cannot iter() over here since destructuring assignments are not allowed
-        // https://github.com/rust-lang/rfcs/issues/372
-
-        for index in 0..self.neurons.len() as usize {
-            if Layer::should_crossover(randomizer)? {
-                first_child
-                    .get_neuron_mut(index)?
-                    .set_bias(other.get_neuron(index)?.get_bias());
-                second_child
-                    .get_neuron_mut(index)?
-                    .set_bias(self.get_neuron(index)?.get_bias());
-            } else {
-                first_child
-                    .get_neuron_mut(index)?
-                    .set_bias(self.get_neuron(index)?.get_bias());
-                second_child
-                    .get_neuron_mut(index)?
-                    .set_bias(other.get_neuron(index)?.get_bias());
-            }
-
-            for j in 0..self.number_of_inputs as usize {
-                if Layer::should_crossover(randomizer)? {
-                    first_child
-                        .get_neuron_mut(index)?
-                        .set_weight(j, other.get_neuron(index)?.get_weight(j)?)?;
-                    second_child
-                        .get_neuron_mut(index)?
-                        .set_weight(j, self.get_neuron(index)?.get_weight(j)?)?;
-                } else {
-                    first_child
-                        .get_neuron_mut(index)?
-                        .set_weight(j, self.get_neuron(index)?.get_weight(j)?)?;
-                    second_child
-                        .get_neuron_mut(index)?
-                        .set_weight(j, other.get_neuron(index)?.get_weight(j)?)?;
-                }
-            }
+    ) -> Layer {
+        Layer {
+            number_of_inputs,
+            neurons: (0..number_of_neurons)
+                .map(|_| Neuron::new(number_of_inputs, randomizer))
+                .collect(),
         }
-
-        Ok((first_child, second_child))
     }
 
     pub fn get_neurons_mut(&mut self) -> &mut Vec<Neuron> {
@@ -93,19 +49,6 @@ impl Layer {
 }
 
 impl LayerTrait for Layer {
-    fn new<T: RandomizerTrait>(
-        number_of_inputs: u32,
-        number_of_neurons: u32,
-        randomizer: &mut T,
-    ) -> Layer {
-        Layer {
-            number_of_inputs,
-            neurons: (0..number_of_neurons)
-                .map(|_| Neuron::new(number_of_inputs, randomizer))
-                .collect(),
-        }
-    }
-
     fn get_number_of_inputs(&self) -> u32 {
         self.number_of_inputs
     }

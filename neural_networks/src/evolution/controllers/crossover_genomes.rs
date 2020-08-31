@@ -1,6 +1,7 @@
 extern crate randomization;
 
 use self::randomization::randomizer::RandomizerTrait;
+use evolution::controllers::crossover_layers::crossover_layers;
 use evolution::domain::genome::Genome;
 use evolution::domain::genome::GenomeTrait;
 use neural_network::NeuralNetwork;
@@ -20,7 +21,7 @@ pub fn crossover_genomes<T: RandomizerTrait>(
         .iter()
         .zip(second_genome.get_neural_network().get_layers().iter())
     {
-        let (c1, c2) = first_parent.crossover(second_parent, randomizer)?;
+        let (c1, c2) = crossover_layers(first_parent, second_parent, randomizer)?;
         first_child.add(c1)?;
         second_child.add(c2)?;
     }

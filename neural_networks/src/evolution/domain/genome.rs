@@ -1,3 +1,6 @@
+extern crate serde;
+
+use self::serde::{Deserialize, Serialize};
 use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
 use neuron::Neuron;
@@ -12,6 +15,7 @@ pub trait GenomeTrait<T: NeuralNetworkTrait<U>, U: NeuronTrait> {
     fn set_fitness(&mut self, fitness: f64);
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Genome<T: NeuralNetworkTrait<U>, U: NeuronTrait> {
     neural_network: T,
     fitness: f64,

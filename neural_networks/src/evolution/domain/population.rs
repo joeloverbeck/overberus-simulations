@@ -1,6 +1,8 @@
 extern crate randomization;
+extern crate serde;
 
 use self::randomization::randomizer::RandomizerTrait;
+use self::serde::{Deserialize, Serialize};
 use evolution::domain::genome::Genome;
 use evolution::domain::genome::GenomeTrait;
 use neural_network::NeuralNetwork;
@@ -19,6 +21,7 @@ pub trait PopulationTrait<T: GenomeTrait<U, V>, U: NeuralNetworkTrait<V>, V: Neu
     fn get_midpoint(&self) -> u32;
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Population<T: GenomeTrait<U, V>, U: NeuralNetworkTrait<V>, V: NeuronTrait> {
     genomes: Vec<T>,
     phantom_u: PhantomData<U>,
@@ -324,6 +327,53 @@ mod tests {
         let next_generation = create_next_generation(&population, &mut randomizer)?;
 
         assert_eq!(next_generation.get_size(), population.get_size());
+
+        Ok(())
+    }
+
+    extern crate file_system;
+
+    #[test]
+    fn test_can_serialize_population_to_file_and_deserialize_it() -> Result<(), String> {
+        use self::file_system::deserialize_json_from_string::deserialize_json_from_string;
+        use self::file_system::does_file_exist::does_file_exist;
+        use self::file_system::read_file_to_string::read_file_to_string;
+        use self::file_system::remove_file::remove_file;
+        use self::file_system::save_json::save_json;
+
+        let population = setup_manual_population()?;
+
+        let file_path = "./testdata/population_test.json";
+
+        save_json(file_path, &population)?;
+
+        let file_as_string = read_file_to_string(file_path)?;
+
+        match deserialize_json_from_string::<
+            Population<Genome<NeuralNetwork<Neuron>, Neuron>, NeuralNetwork<Neuron>, Neuron>,
+        >(&file_as_string)
+        {
+            Err(error) => {
+                remove_file(file_path)?;
+                panic!("Couldn't deserialize {:?}. Error: {:?}", file_path, error);
+            }
+
+            Ok(deserialized) => {
+                remove_file(file_path)?;
+
+                assert!(!does_file_exist(file_path)?, "After serializing to file and deserializing, the file path {:?} shouldn't correspond to an existing file", file_path);
+
+                assert_eq!(deserialized.get_size(), 2);
+
+                let first_genome = deserialized.get_genome(0)?;
+
+                assert_eq!(first_genome.get_neural_network().get_number_of_layers(), 2);
+
+                let second_genome = deserialized.get_genome(1)?;
+
+                assert_eq!(second_genome.get_neural_network().get_number_of_layers(), 2);
+            }
+        }
 
         Ok(())
     }

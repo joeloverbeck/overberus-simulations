@@ -110,6 +110,7 @@ impl<T: NeuronTrait> NeuralNetworkTrait<T> for NeuralNetwork<T> {
 mod tests {
 
     use super::*;
+    use neural_network::tests::file_system::deserialize_json_from_string::deserialize_json_from_string;
     use neural_network::tests::file_system::read_file_to_string::read_file_to_string;
     use neural_network::tests::file_system::save_json::save_json;
 
@@ -274,7 +275,7 @@ mod tests {
         use self::file_system::does_file_exist::does_file_exist;
         use self::file_system::remove_file::remove_file;
 
-        let file_path = "./testdata/test.json";
+        let file_path = "./testdata/neural_network_test.json";
 
         assert!(
             !does_file_exist(file_path)?,
@@ -286,7 +287,7 @@ mod tests {
 
         let file_as_string = read_file_to_string(file_path)?;
 
-        match serde_json::from_str::<NeuralNetwork<Neuron>>(&file_as_string.as_str()) {
+        match deserialize_json_from_string::<NeuralNetwork<Neuron>>(&file_as_string) {
             Err(error) => {
                 remove_file(file_path)?;
                 panic!("Couldn't deserialize {:?}. Error: {:?}", file_path, error);

@@ -110,8 +110,12 @@ impl<T: NeuronTrait> NeuralNetworkTrait<T> for NeuralNetwork<T> {
 mod tests {
 
     use super::*;
+    use neural_network::tests::file_system::read_file_to_string::read_file_to_string;
+    use neural_network::tests::file_system::save_json::save_json;
 
     use neural_network::randomization::randomizer::Randomizer;
+
+    extern crate file_system;
 
     #[test]
     fn test_when_creating_an_empty_nn_it_has_no_layers() -> Result<(), String> {
@@ -256,6 +260,60 @@ mod tests {
 
         assert_eq!(third_layer.get_number_of_inputs(), 2);
         assert_eq!(third_layer.get_number_of_neurons(), 2);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_can_save_and_load_a_serialized_neural_network() -> Result<(), String> {
+        let mut randomizer = Randomizer::new();
+
+        let neural_network =
+            NeuralNetwork::new_with_specified_layers(&[[3, 2], [2, 2], [2, 2]], &mut randomizer);
+
+        use self::file_system::does_file_exist::does_file_exist;
+        use self::file_system::remove_file::remove_file;
+
+        let file_path = "./testdata/test.json";
+
+        assert!(
+            !does_file_exist(file_path)?,
+            "The file path {:?} shouldn't correspond to an existing file",
+            file_path
+        );
+
+        save_json(file_path, &neural_network)?;
+
+        let file_as_string = read_file_to_string(file_path)?;
+
+        match serde_json::from_str::<NeuralNetwork<Neuron>>(&file_as_string.as_str()) {
+            Err(error) => {
+                remove_file(file_path)?;
+                panic!("Couldn't deserialize {:?}. Error: {:?}", file_path, error);
+            }
+            Ok(deserialized) => {
+                remove_file(file_path)?;
+
+                assert!(!does_file_exist(file_path)?, "After serializing to file and deserializing, the file path {:?} shouldn't correspond to an existing file", file_path);
+
+                assert_eq!(deserialized.get_number_of_layers(), 3);
+
+                let first_layer = deserialized.get_layer(0);
+
+                assert_eq!(first_layer.get_number_of_inputs(), 3);
+                assert_eq!(first_layer.get_number_of_neurons(), 2);
+
+                let second_layer = deserialized.get_layer(1);
+
+                assert_eq!(second_layer.get_number_of_inputs(), 2);
+                assert_eq!(second_layer.get_number_of_neurons(), 2);
+
+                let third_layer = deserialized.get_layer(2);
+
+                assert_eq!(third_layer.get_number_of_inputs(), 2);
+                assert_eq!(third_layer.get_number_of_neurons(), 2);
+            }
+        }
 
         Ok(())
     }

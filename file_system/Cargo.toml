@@ -1,10 +1,13 @@
 [package]
-name = "neural_networks" # the name of the package
+name = "file_system" # the name of the package
 version = "0.1.0"    # the current version, obeying semver
 authors = ["Joel Overbeck"]
 
+
+[lib]
+
+
 [dependencies]
-serde_json = "1.0.57"
 serde = { version = "1.0.115", features = ["derive"] }
-randomization = { path = "../randomization" }
-file_system = { path = "../file_system" }
+serde_json = "1.0.57"
+text_manipulation = { path = "../text_manipulation" }

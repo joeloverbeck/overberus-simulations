@@ -15,7 +15,7 @@ pub trait GenomeTrait<T: NeuralNetworkTrait<U>, U: NeuronTrait> {
     fn set_fitness(&mut self, fitness: f64);
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Genome<T: NeuralNetworkTrait<U>, U: NeuronTrait> {
     neural_network: T,
     fitness: f64,

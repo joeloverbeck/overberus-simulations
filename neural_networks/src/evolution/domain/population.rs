@@ -21,8 +21,8 @@ pub trait PopulationTrait<T: GenomeTrait<U, V>, U: NeuralNetworkTrait<V>, V: Neu
     fn get_midpoint(&self) -> u32;
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct Population<T: GenomeTrait<U, V>, U: NeuralNetworkTrait<V>, V: NeuronTrait> {
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Population<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTrait + Clone> {
     genomes: Vec<T>,
     phantom_u: PhantomData<U>,
     phantom_v: PhantomData<V>,
@@ -82,7 +82,7 @@ impl Population<Genome<NeuralNetwork<Neuron>, Neuron>, NeuralNetwork<Neuron>, Ne
     }
 }
 
-impl<T: GenomeTrait<U, V>, U: NeuralNetworkTrait<V>, V: NeuronTrait> PopulationTrait<T, U, V>
+impl<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTrait + Clone> PopulationTrait<T, U, V>
     for Population<T, U, V>
 {
     fn get_size(&self) -> u32 {

@@ -26,7 +26,7 @@ pub trait NeuronTrait {
     fn mutate<T: RandomizerTrait>(&mut self, randomizer: &mut T) -> Result<(), String>;
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Neuron {
     weights: Vec<f64>,
     bias: f64,

@@ -17,7 +17,7 @@ pub trait LayerTrait<T: NeuronTrait> {
     fn should_crossover<U: RandomizerTrait>(randomizer: &mut U) -> Result<bool, String>;
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Layer<T: NeuronTrait> {
     number_of_inputs: u32,
     neurons: Vec<T>,

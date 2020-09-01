@@ -17,7 +17,7 @@ pub trait NeuralNetworkTrait<T: NeuronTrait> {
     fn propagate(&self, inputs: &[f64]) -> Result<Vec<f64>, String>;
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NeuralNetwork<T: NeuronTrait> {
     layers: Vec<Layer<T>>,
 }

@@ -3,13 +3,12 @@ use self::randomization::randomizer::RandomizerTrait;
 use evolution::domain::layer_couple::LayerCouple;
 use layer::Layer;
 use layer::LayerTrait;
-use neuron::Neuron;
 use neuron::NeuronTrait;
 
 pub fn crossover_weights_of_neurons<T: NeuronTrait, U: RandomizerTrait>(
     layer_couple: &LayerCouple<T>,
-    first_child: &mut Layer<Neuron>,
-    second_child: &mut Layer<Neuron>,
+    first_child: &mut Layer<T>,
+    second_child: &mut Layer<T>,
     index: usize,
     randomizer: &mut U,
 ) -> Result<(), String> {

@@ -7,20 +7,23 @@ use evolution::domain::mechanics::mutate_genome::mutate_genome;
 use evolution::domain::population::Population;
 use evolution::domain::population::PopulationTrait;
 use neural_network::NeuralNetwork;
-use neuron::Neuron;
+use neuron::NeuronTrait;
 
-type NN = NeuralNetwork<Neuron>;
-type GN = Genome<NN, Neuron>;
+type GN<T> = Genome<NeuralNetwork<T>, T>;
 
-pub fn create_next_generation<T: RandomizerTrait>(
-    population: &Population<GN, NN, Neuron>,
-    randomizer: &mut T,
-) -> Result<Population<GN, NN, Neuron>, String> {
+pub fn create_next_generation<T: NeuronTrait + Clone, U: RandomizerTrait>(
+    population: &Population<GN<T>, NeuralNetwork<T>, T>,
+    randomizer: &mut U,
+    neuron_creator: fn(u32, &mut U) -> T,
+) -> Result<Population<GN<T>, NeuralNetwork<T>, T>, String> {
     let mut next_generation = Population::new();
 
     for index in 0..population.get_midpoint() {
-        let (mut first_child, mut second_child) =
-            crossover_genomes(GenomeCouple::new(index, population)?, randomizer)?;
+        let (mut first_child, mut second_child) = crossover_genomes(
+            GenomeCouple::new(index, population)?,
+            randomizer,
+            neuron_creator,
+        )?;
 
         mutate_genome(&mut first_child, randomizer)?;
         mutate_genome(&mut second_child, randomizer)?;

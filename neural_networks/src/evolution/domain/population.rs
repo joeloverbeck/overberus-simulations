@@ -49,36 +49,34 @@ impl fmt::Debug
     }
 }
 
-impl Default for Population<Genome<NeuralNetwork<Neuron>, Neuron>, NeuralNetwork<Neuron>, Neuron> {
+impl<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTrait + Clone> Default
+    for Population<T, U, V>
+{
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Population<Genome<NeuralNetwork<Neuron>, Neuron>, NeuralNetwork<Neuron>, Neuron> {
+impl<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTrait + Clone>
+    Population<T, U, V>
+{
     pub fn new() -> Self {
-        Population::<Genome<NeuralNetwork<Neuron>, Neuron>, NeuralNetwork<Neuron>, Neuron> {
+        Population::<T, U, V> {
             genomes: Vec::new(),
             phantom_u: PhantomData,
             phantom_v: PhantomData,
         }
     }
 
-    pub fn new_with_specified_layers<U: RandomizerTrait>(
+    pub fn new_with_specified_layers<W: RandomizerTrait>(
         number_of_neural_networks: u32,
-        layer_definition: &[[usize; 2]],
-        randomizer: &mut U,
-    ) -> Result<Self, String>
-    where
-        Self: std::marker::Sized,
-    {
+        randomizer: &mut W,
+        genome_creator: fn(&mut W) -> T,
+    ) -> Result<Self, String> {
         let mut population = Population::new();
 
         for _ in 0..number_of_neural_networks {
-            let genome = Genome::new(NeuralNetwork::new_with_specified_layers(
-                layer_definition,
-                randomizer,
-            ));
+            let genome = genome_creator(randomizer);
 
             population.add(genome)?;
         }
@@ -136,13 +134,18 @@ mod tests {
     use self::randomization::randomizer::Randomizer;
     use super::*;
     use evolution::controllers::create_next_generation::create_next_generation;
+    use evolution::domain::create_genome::create_genome;
     use layer::Layer;
     use layer::LayerTrait;
     use neuron::Neuron;
 
     #[test]
     fn test_can_create_empty_population_of_neural_networks() -> Result<(), String> {
-        let population = Population::new();
+        let population = Population::<
+            Genome<NeuralNetwork<Neuron>, Neuron>,
+            NeuralNetwork<Neuron>,
+            Neuron,
+        >::new();
 
         assert_eq!(population.get_size(), 0);
 
@@ -154,8 +157,13 @@ mod tests {
     ) -> Result<(), String> {
         let mut randomizer = Randomizer::new();
 
-        let population_result =
-            Population::new_with_specified_layers(10, &[[4, 3], [3, 2], [2, 1]], &mut randomizer);
+        let population_result = Population::<
+            Genome<NeuralNetwork<Neuron>, Neuron>,
+            NeuralNetwork<Neuron>,
+            Neuron,
+        >::new_with_specified_layers(
+            10, &mut randomizer, create_genome
+        );
 
         if let Err(error) = population_result {
             panic!(
@@ -176,8 +184,11 @@ mod tests {
     ) -> Result<(), String> {
         let mut randomizer = Randomizer::new();
 
-        let population =
-            Population::new_with_specified_layers(10, &[[4, 3], [3, 2], [2, 1]], &mut randomizer)?;
+        let population = Population::<
+            Genome<NeuralNetwork<Neuron>, Neuron>,
+            NeuralNetwork<Neuron>,
+            Neuron,
+        >::new_with_specified_layers(10, &mut randomizer, create_genome)?;
 
         assert_eq!(
             population
@@ -211,8 +222,13 @@ mod tests {
     {
         let mut randomizer = Randomizer::new();
 
-        let population =
-            Population::new_with_specified_layers(10, &[[4, 3], [3, 2], [2, 1]], &mut randomizer)?;
+        let population = Population::<
+            Genome<NeuralNetwork<Neuron>, Neuron>,
+            NeuralNetwork<Neuron>,
+            Neuron,
+        >::new_with_specified_layers::<Randomizer>(
+            10, &mut randomizer, create_genome
+        )?;
 
         assert_eq!(
             population
@@ -250,8 +266,14 @@ mod tests {
 
         let mut randomizer = Randomizer::new();
 
-        let layer1 = Layer::<Neuron>::create_layer(3, 2, &mut randomizer);
-        let layer2 = Layer::<Neuron>::create_layer(2, 1, &mut randomizer);
+        let layer1 =
+            Layer::<Neuron>::create_layer(3, 2, &mut randomizer, |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, randomizer)
+            });
+        let layer2 =
+            Layer::<Neuron>::create_layer(2, 1, &mut randomizer, |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, randomizer)
+            });
 
         neural_network1.add(layer1)?;
         neural_network1.add(layer2)?;
@@ -262,8 +284,14 @@ mod tests {
 
         let mut neural_network2 = NeuralNetwork::new();
 
-        let layer1 = Layer::<Neuron>::create_layer(3, 2, &mut randomizer);
-        let layer2 = Layer::<Neuron>::create_layer(2, 1, &mut randomizer);
+        let layer1 =
+            Layer::<Neuron>::create_layer(3, 2, &mut randomizer, |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, randomizer)
+            });
+        let layer2 =
+            Layer::<Neuron>::create_layer(2, 1, &mut randomizer, |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, randomizer)
+            });
 
         neural_network2.add(layer1)?;
         neural_network2.add(layer2)?;
@@ -308,8 +336,14 @@ mod tests {
 
         let mut randomizer = Randomizer::new();
 
-        let layer1 = Layer::<Neuron>::create_layer(3, 2, &mut randomizer);
-        let layer2 = Layer::<Neuron>::create_layer(2, 1, &mut randomizer);
+        let layer1 =
+            Layer::<Neuron>::create_layer(3, 2, &mut randomizer, |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, randomizer)
+            });
+        let layer2 =
+            Layer::<Neuron>::create_layer(2, 1, &mut randomizer, |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, randomizer)
+            });
 
         neural_network.add(layer1)?;
         neural_network.add(layer2)?;
@@ -334,7 +368,11 @@ mod tests {
 
         let mut randomizer = Randomizer::new();
 
-        let next_generation = create_next_generation(&population, &mut randomizer)?;
+        let next_generation = create_next_generation(
+            &population,
+            &mut randomizer,
+            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+        )?;
 
         assert_eq!(next_generation.get_size(), population.get_size());
 

@@ -8,15 +8,15 @@ use evolution::domain::layer_couple::LayerCouple;
 use evolution::domain::mechanics::crossover_layers::crossover_layers;
 use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
-use neuron::Neuron;
+use neuron::NeuronTrait;
 
-type NN = NeuralNetwork<Neuron>;
-type GN = Genome<NN, Neuron>;
+type GN<T> = Genome<NeuralNetwork<T>, T>;
 
-pub fn crossover_genomes<T: RandomizerTrait>(
-    couple: GenomeCouple,
-    randomizer: &mut T,
-) -> Result<(GN, GN), String> {
+pub fn crossover_genomes<T: NeuronTrait + Clone, U: RandomizerTrait>(
+    couple: GenomeCouple<T>,
+    randomizer: &mut U,
+    neuron_creator: fn(u32, &mut U) -> T,
+) -> Result<(GN<T>, GN<T>), String> {
     let mut first_child = NeuralNetwork::new();
     let mut second_child = NeuralNetwork::new();
 
@@ -33,7 +33,11 @@ pub fn crossover_genomes<T: RandomizerTrait>(
                 .iter(),
         )
     {
-        let (c1, c2) = crossover_layers(LayerCouple::new(first_layer, second_layer)?, randomizer)?;
+        let (c1, c2) = crossover_layers(
+            LayerCouple::new(first_layer, second_layer)?,
+            randomizer,
+            neuron_creator,
+        )?;
         first_child.add(c1)?;
         second_child.add(c2)?;
     }

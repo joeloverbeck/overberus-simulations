@@ -4,7 +4,6 @@ extern crate serde;
 use self::randomization::randomizer::RandomizerTrait;
 use self::serde::{Deserialize, Serialize};
 use evolution::domain::constants::CROSSOVER_PROBABILITY;
-use neuron::Neuron;
 use neuron::NeuronTrait;
 
 pub trait LayerTrait<T: NeuronTrait> {
@@ -28,11 +27,12 @@ impl<T: NeuronTrait> Layer<T> {
         number_of_inputs: u32,
         number_of_neurons: u32,
         randomizer: &mut U,
-    ) -> Layer<Neuron> {
-        Layer {
+        neuron_creator: fn(u32, &mut U) -> T,
+    ) -> Layer<T> {
+        Layer::<T> {
             number_of_inputs,
             neurons: (0..number_of_neurons)
-                .map(|_| Neuron::new(number_of_inputs, randomizer))
+                .map(|_| neuron_creator(number_of_inputs, randomizer))
                 .collect(),
         }
     }
@@ -89,11 +89,14 @@ mod tests {
 
     use super::*;
     use layer::randomization::randomizer::Randomizer;
+    use neuron::Neuron;
 
     fn setup_layer() -> Layer<Neuron> {
         let mut randomizer = Randomizer::new();
 
-        Layer::<Neuron>::create_layer(3, 2, &mut randomizer)
+        Layer::<Neuron>::create_layer(3, 2, &mut randomizer, |number_of_inputs, randomizer| {
+            Neuron::new(number_of_inputs, randomizer)
+        })
     }
 
     #[test]

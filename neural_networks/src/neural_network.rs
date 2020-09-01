@@ -5,10 +5,14 @@ use self::randomization::randomizer::RandomizerTrait;
 use self::serde::{Deserialize, Serialize};
 use layer::Layer;
 use layer::LayerTrait;
-use neuron::Neuron;
 use neuron::NeuronTrait;
 
 pub trait NeuralNetworkTrait<T: NeuronTrait> {
+    fn new_with_specified_layers<U: RandomizerTrait>(
+        layers_definition: &[[usize; 2]],
+        randomizer: &mut U,
+        neuron_creator: fn(u32, &mut U) -> T,
+    ) -> Self;
     fn get_number_of_layers(&self) -> u32;
     fn get_layer(&self, index: usize) -> &Layer<T>;
     fn get_layers(&self) -> &Vec<Layer<T>>;
@@ -22,28 +26,32 @@ pub struct NeuralNetwork<T: NeuronTrait> {
     layers: Vec<Layer<T>>,
 }
 
-impl Default for NeuralNetwork<Neuron> {
+impl<T: NeuronTrait> NeuralNetwork<T> {
+    pub fn new() -> Self {
+        Self { layers: Vec::new() }
+    }
+}
+
+impl<T: NeuronTrait> Default for NeuralNetwork<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl NeuralNetwork<Neuron> {
-    pub fn new() -> Self {
-        Self { layers: Vec::new() }
-    }
-
-    pub fn new_with_specified_layers<U: RandomizerTrait>(
+impl<T: NeuronTrait> NeuralNetworkTrait<T> for NeuralNetwork<T> {
+    fn new_with_specified_layers<U: RandomizerTrait>(
         layers_definition: &[[usize; 2]],
         randomizer: &mut U,
+        neuron_creator: fn(u32, &mut U) -> T,
     ) -> Self {
         let mut neural_network = NeuralNetwork::new();
 
         for layer in layers_definition {
-            if let Err(error) = neural_network.add(Layer::<Neuron>::create_layer(
+            if let Err(error) = neural_network.add(Layer::<T>::create_layer(
                 layer[0] as u32,
                 layer[1] as u32,
                 randomizer,
+                neuron_creator,
             )) {
                 panic!("Failed to add a layer to Neural Network: {:?}", error);
             }
@@ -51,9 +59,7 @@ impl NeuralNetwork<Neuron> {
 
         neural_network
     }
-}
 
-impl<T: NeuronTrait> NeuralNetworkTrait<T> for NeuralNetwork<T> {
     fn get_number_of_layers(&self) -> u32 {
         self.layers.len() as u32
     }
@@ -113,6 +119,7 @@ mod tests {
     use neural_network::tests::file_system::deserialize_json_from_string::deserialize_json_from_string;
     use neural_network::tests::file_system::read_file_to_string::read_file_to_string;
     use neural_network::tests::file_system::save_json::save_json;
+    use neuron::Neuron;
 
     use neural_network::randomization::randomizer::Randomizer;
 
@@ -120,7 +127,7 @@ mod tests {
 
     #[test]
     fn test_when_creating_an_empty_nn_it_has_no_layers() -> Result<(), String> {
-        let nn = NeuralNetwork::new();
+        let nn = NeuralNetwork::<Neuron>::new();
 
         assert_eq!(nn.get_number_of_layers(), 0);
 
@@ -132,8 +139,11 @@ mod tests {
     ) -> Result<(), String> {
         let mut randomizer = Randomizer::new();
 
-        let nn =
-            NeuralNetwork::new_with_specified_layers(&[[4, 3], [3, 2], [2, 1]], &mut randomizer);
+        let nn = NeuralNetwork::<Neuron>::new_with_specified_layers(
+            &[[4, 3], [3, 2], [2, 1]],
+            &mut randomizer,
+            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+        );
         assert_eq!(nn.get_number_of_layers(), 3);
         assert_eq!(nn.get_layer(0).get_number_of_inputs(), 4);
         assert_eq!(nn.get_layer(0).get_number_of_neurons(), 3);
@@ -151,9 +161,18 @@ mod tests {
 
         let mut neural_network = NeuralNetwork::new();
 
-        let layer1 = Layer::<Neuron>::create_layer(3, 2, &mut randomizer);
-        let layer2 = Layer::<Neuron>::create_layer(2, 1, &mut randomizer);
-        let layer3 = Layer::<Neuron>::create_layer(3, 1, &mut randomizer);
+        let layer1 =
+            Layer::<Neuron>::create_layer(3, 2, &mut randomizer, |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, randomizer)
+            });
+        let layer2 =
+            Layer::<Neuron>::create_layer(2, 1, &mut randomizer, |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, randomizer)
+            });
+        let layer3 =
+            Layer::<Neuron>::create_layer(3, 1, &mut randomizer, |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, randomizer)
+            });
 
         if let Err(error) = neural_network.add(layer1) {
             panic!("Adding the first layer failed: {:?}", error);
@@ -172,8 +191,11 @@ mod tests {
     ) {
         let mut randomizer = Randomizer::new();
 
-        let neural_network =
-            NeuralNetwork::new_with_specified_layers(&[[3, 2], [2, 1]], &mut randomizer);
+        let neural_network = NeuralNetwork::<Neuron>::new_with_specified_layers(
+            &[[3, 2], [2, 1]],
+            &mut randomizer,
+            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+        );
 
         let inputs = vec![0.0_f64, 1.0_f64];
         if let Err(error) = neural_network.propagate(&inputs) {
@@ -189,8 +211,11 @@ mod tests {
     ) -> Result<(), String> {
         let mut randomizer = Randomizer::new();
 
-        let neural_network =
-            NeuralNetwork::new_with_specified_layers(&[[3, 2], [2, 1]], &mut randomizer);
+        let neural_network = NeuralNetwork::<Neuron>::new_with_specified_layers(
+            &[[3, 2], [2, 1]],
+            &mut randomizer,
+            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+        );
 
         let inputs = vec![0.0_f64, 1.0_f64, 0.0_f64];
         let outputs = neural_network.propagate(&inputs)?;
@@ -218,8 +243,11 @@ mod tests {
 
         let mut randomizer = FakeRandomizer {};
 
-        let neural_network =
-            NeuralNetwork::new_with_specified_layers(&[[3, 2], [2, 2], [2, 2]], &mut randomizer);
+        let neural_network = NeuralNetwork::<Neuron>::new_with_specified_layers(
+            &[[3, 2], [2, 2], [2, 2]],
+            &mut randomizer,
+            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+        );
 
         let inputs = vec![0.0_f64, 1.0_f64, 0.0_f64];
         let outputs = neural_network.propagate(&inputs)?;
@@ -238,8 +266,11 @@ mod tests {
     fn test_can_serde_a_neural_network() -> Result<(), String> {
         let mut randomizer = Randomizer::new();
 
-        let neural_network =
-            NeuralNetwork::new_with_specified_layers(&[[3, 2], [2, 2], [2, 2]], &mut randomizer);
+        let neural_network = NeuralNetwork::<Neuron>::new_with_specified_layers(
+            &[[3, 2], [2, 2], [2, 2]],
+            &mut randomizer,
+            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+        );
 
         let serialized = serde_json::to_string(&neural_network).unwrap();
 
@@ -269,8 +300,11 @@ mod tests {
     fn test_can_save_and_load_a_serialized_neural_network() -> Result<(), String> {
         let mut randomizer = Randomizer::new();
 
-        let neural_network =
-            NeuralNetwork::new_with_specified_layers(&[[3, 2], [2, 2], [2, 2]], &mut randomizer);
+        let neural_network = NeuralNetwork::<Neuron>::new_with_specified_layers(
+            &[[3, 2], [2, 2], [2, 2]],
+            &mut randomizer,
+            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+        );
 
         use self::file_system::does_file_exist::does_file_exist;
         use self::file_system::remove_file::remove_file;

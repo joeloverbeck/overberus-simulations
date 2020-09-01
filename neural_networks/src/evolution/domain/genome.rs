@@ -76,8 +76,11 @@ mod tests {
     fn test_after_creating_a_genome_it_has_expected_properties() -> Result<(), String> {
         let mut randomizer = Randomizer::new();
 
-        let neural_network =
-            NeuralNetwork::new_with_specified_layers(&[[4, 3], [3, 2], [2, 1]], &mut randomizer);
+        let neural_network = NeuralNetwork::new_with_specified_layers(
+            &[[4, 3], [3, 2], [2, 1]],
+            &mut randomizer,
+            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+        );
 
         let genome = Genome::new(neural_network);
 

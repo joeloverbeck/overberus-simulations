@@ -1,6 +1,8 @@
 extern crate randomization;
+extern crate serde;
 
 use self::randomization::randomizer::RandomizerTrait;
+use self::serde::{Deserialize, Serialize};
 use evolution::domain::constants::CROSSOVER_PROBABILITY;
 use neuron::Neuron;
 use neuron::NeuronTrait;
@@ -15,7 +17,7 @@ pub trait LayerTrait<T: NeuronTrait> {
     fn should_crossover<U: RandomizerTrait>(randomizer: &mut U) -> Result<bool, String>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Layer<T: NeuronTrait> {
     number_of_inputs: u32,
     neurons: Vec<T>,

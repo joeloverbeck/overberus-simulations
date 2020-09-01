@@ -4,4 +4,6 @@ version = "0.1.0"    # the current version, obeying semver
 authors = ["Joel Overbeck"]
 
 [dependencies]
+serde_json = "1.0.57"
+serde = { version = "1.0.115", features = ["derive"] }
 randomization = { path = "../randomization" }

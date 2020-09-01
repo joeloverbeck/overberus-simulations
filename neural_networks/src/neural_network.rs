@@ -1,6 +1,8 @@
 extern crate randomization;
+extern crate serde;
 
 use self::randomization::randomizer::RandomizerTrait;
+use self::serde::{Deserialize, Serialize};
 use layer::Layer;
 use layer::LayerTrait;
 use neuron::Neuron;
@@ -15,7 +17,7 @@ pub trait NeuralNetworkTrait<T: NeuronTrait> {
     fn propagate(&self, inputs: &[f64]) -> Result<Vec<f64>, String>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NeuralNetwork<T: NeuronTrait> {
     layers: Vec<Layer<T>>,
 }
@@ -223,6 +225,37 @@ mod tests {
         assert!(outputs[0] <= 0.7266);
         assert!(outputs[1] >= 0.7265);
         assert!(outputs[1] <= 0.7266);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_can_serde_a_neural_network() -> Result<(), String> {
+        let mut randomizer = Randomizer::new();
+
+        let neural_network =
+            NeuralNetwork::new_with_specified_layers(&[[3, 2], [2, 2], [2, 2]], &mut randomizer);
+
+        let serialized = serde_json::to_string(&neural_network).unwrap();
+
+        let deserialized: NeuralNetwork<Neuron> = serde_json::from_str(&serialized).unwrap();
+
+        assert_eq!(deserialized.get_number_of_layers(), 3);
+
+        let first_layer = deserialized.get_layer(0);
+
+        assert_eq!(first_layer.get_number_of_inputs(), 3);
+        assert_eq!(first_layer.get_number_of_neurons(), 2);
+
+        let second_layer = deserialized.get_layer(1);
+
+        assert_eq!(second_layer.get_number_of_inputs(), 2);
+        assert_eq!(second_layer.get_number_of_neurons(), 2);
+
+        let third_layer = deserialized.get_layer(2);
+
+        assert_eq!(third_layer.get_number_of_inputs(), 2);
+        assert_eq!(third_layer.get_number_of_neurons(), 2);
 
         Ok(())
     }

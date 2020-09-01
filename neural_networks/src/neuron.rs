@@ -1,9 +1,12 @@
 extern crate randomization;
+extern crate serde;
 
 use self::randomization::randomizer::RandomizerTrait;
-use activation_functions::sigmoid::sigmoid;
 use evolution::domain::constants::MUTATION_PROBABILITY;
+use neuron_activation::activate_neuron::activate_neuron;
+use neuron_activation::activation_functions::ActivationFunctions;
 
+use self::serde::{Deserialize, Serialize};
 use std::fmt;
 
 pub trait NeuronTrait {
@@ -14,13 +17,20 @@ pub trait NeuronTrait {
     fn set_bias(&mut self, bias: f64);
     fn get_weight(&self, index: usize) -> Result<f64, String>;
     fn set_weight(&mut self, index: usize, weight: f64) -> Result<(), String>;
+    fn get_activation_function(&self) -> &ActivationFunctions;
+    fn set_activation_function(
+        &mut self,
+        activation_function: ActivationFunctions,
+    ) -> Result<(), String>;
     fn should_mutate<T: RandomizerTrait>(randomizer: &mut T) -> Result<bool, String>;
     fn mutate<T: RandomizerTrait>(&mut self, randomizer: &mut T) -> Result<(), String>;
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Neuron {
     weights: Vec<f64>,
     bias: f64,
+    activation_function: ActivationFunctions,
 }
 
 impl fmt::Debug for Neuron {
@@ -47,6 +57,7 @@ impl NeuronTrait for Neuron {
                 .map(|_| randomizer.get_normal())
                 .collect(),
             bias: randomizer.get_normal(),
+            activation_function: ActivationFunctions::Sigmoid,
         }
     }
 
@@ -55,13 +66,14 @@ impl NeuronTrait for Neuron {
     }
 
     fn activate(&self, inputs: &[f64]) -> std::result::Result<f64, std::string::String> {
-        Ok(sigmoid(
+        Ok(activate_neuron(
             self.weights
                 .iter()
                 .zip(inputs.iter())
                 .map(|(w, x)| w * x)
                 .sum::<f64>()
                 + self.bias,
+            &self.activation_function,
         ))
     }
 
@@ -110,6 +122,16 @@ impl NeuronTrait for Neuron {
             }
         }
 
+        Ok(())
+    }
+    fn get_activation_function(&self) -> &ActivationFunctions {
+        &self.activation_function
+    }
+    fn set_activation_function(
+        &mut self,
+        activation_function: ActivationFunctions,
+    ) -> std::result::Result<(), std::string::String> {
+        self.activation_function = activation_function;
         Ok(())
     }
 }

@@ -16,13 +16,18 @@ pub trait PopulationTrait<T: GenomeTrait<U, V>, U: NeuralNetworkTrait<V>, V: Neu
     fn get_size(&self) -> u32;
     fn add(&mut self, genome: T) -> Result<(), String>;
     fn get_genome(&self, index: usize) -> Result<&T, String>;
+    fn get_genomes_mut(&mut self) -> Result<&mut Vec<T>, String>;
     fn get_genome_mut(&mut self, index: usize) -> Result<&mut T, String>;
     fn get_sorted_index(&self) -> Vec<usize>;
     fn get_midpoint(&self) -> u32;
 }
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct Population<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTrait + Clone> {
+pub struct Population<
+    T: GenomeTrait<U, V> + Clone,
+    U: NeuralNetworkTrait<V> + Clone,
+    V: NeuronTrait + Clone,
+> {
     genomes: Vec<T>,
     phantom_u: PhantomData<U>,
     phantom_v: PhantomData<V>,
@@ -82,8 +87,8 @@ impl Population<Genome<NeuralNetwork<Neuron>, Neuron>, NeuralNetwork<Neuron>, Ne
     }
 }
 
-impl<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTrait + Clone> PopulationTrait<T, U, V>
-    for Population<T, U, V>
+impl<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTrait + Clone>
+    PopulationTrait<T, U, V> for Population<T, U, V>
 {
     fn get_size(&self) -> u32 {
         self.genomes.len() as u32
@@ -117,6 +122,11 @@ impl<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTr
     }
     fn get_midpoint(&self) -> u32 {
         self.get_size() % 2 + self.get_size() / 2
+    }
+    fn get_genomes_mut(
+        &mut self,
+    ) -> std::result::Result<&mut std::vec::Vec<T>, std::string::String> {
+        Ok(&mut self.genomes)
     }
 }
 

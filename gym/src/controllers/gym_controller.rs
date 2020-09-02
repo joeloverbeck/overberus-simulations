@@ -72,7 +72,14 @@ mod tests {
 
         let mut randomizer = Randomizer::new();
 
-        let population = Population::new_with_specified_layers(10, &mut randomizer, create_genome)?;
+        let layers_definition = &[[4, 3], [3, 2], [2, 1]];
+
+        let population = Population::new_with_specified_layers(
+            10,
+            layers_definition,
+            create_genome,
+            &mut randomizer,
+        )?;
 
         let mut sut = GymController::new(
             population,

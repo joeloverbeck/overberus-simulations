@@ -11,15 +11,17 @@ use neural_networks::neuron::Neuron;
 fn main() {
     let mut randomizer = Randomizer::new();
 
+    let layers_definition = &[[4, 3], [3, 2], [2, 1]];
+
     if let Ok(population) =
-        Population::new_with_specified_layers(10, &mut randomizer, create_genome)
+        Population::new_with_specified_layers(10, layers_definition, create_genome, &mut randomizer)
     {
         println!("Created population: {:?}", population);
 
         let next_generation = create_next_generation(
             &population,
-            &mut randomizer,
             |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+            &mut randomizer,
         );
 
         println!("**Next generation produced**");

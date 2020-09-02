@@ -13,8 +13,8 @@ type GN<T> = Genome<NeuralNetwork<T>, T>;
 
 pub fn create_next_generation<T: NeuronTrait + Clone, U: RandomizerTrait>(
     population: &Population<GN<T>, NeuralNetwork<T>, T>,
-    randomizer: &mut U,
     neuron_creator: fn(u32, &mut U) -> T,
+    randomizer: &mut U,
 ) -> Result<Population<GN<T>, NeuralNetwork<T>, T>, String> {
     let mut next_generation = Population::new();
 

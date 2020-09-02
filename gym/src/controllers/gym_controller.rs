@@ -13,24 +13,28 @@ pub struct GymController<
     T: GenomeTrait<U, V> + Clone,
     U: NeuralNetworkTrait<V> + Clone,
     V: NeuronTrait + Clone,
+    W: Fn(u32) -> bool,
+    X: Fn(&mut T) -> Result<(), String>,
 > {
     population: Population<T, U, V>,
     generations: u32,
-    continue_condition: fn(u32) -> bool,
-    train_genome: fn(&mut T) -> Result<(), String>,
+    continue_condition: W,
+    train_genome: X,
 }
 
 impl<
         T: GenomeTrait<U, V> + Clone + std::fmt::Debug,
         U: NeuralNetworkTrait<V> + Clone,
         V: NeuronTrait + Clone,
-    > GymController<T, U, V>
+        W: Fn(u32) -> bool,
+        X: Fn(&mut T) -> Result<(), String>,
+    > GymController<T, U, V, W, X>
 {
     pub fn new(
         population: Population<T, U, V>,
-        continue_condition: fn(u32) -> bool,
-        train_genome: fn(&mut T) -> Result<(), String>,
-    ) -> GymController<T, U, V> {
+        continue_condition: W,
+        train_genome: X,
+    ) -> GymController<T, U, V, W, X> {
         GymController {
             population,
             generations: 0,
@@ -39,12 +43,12 @@ impl<
         }
     }
 
-    pub fn train<W: RandomizerTrait, X: Fn(U) -> T, Y: Fn() -> U, Z: Fn(u32, &mut W) -> V>(
+    pub fn train<Y: RandomizerTrait, Z: Fn(U) -> T, A: Fn() -> U, B: Fn(u32, &mut Y) -> V>(
         &mut self,
-        genome_creator: X,
-        neural_network_creator: Y,
-        neuron_creator: Z,
-        randomizer: &mut W,
+        genome_creator: Z,
+        neural_network_creator: A,
+        neuron_creator: B,
+        randomizer: &mut Y,
     ) -> Result<Population<T, U, V>, String> {
         while (self.continue_condition)(self.generations) {
             for genome in self.population.get_genomes_mut()? {

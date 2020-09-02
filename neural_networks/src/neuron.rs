@@ -5,6 +5,7 @@ use self::randomization::randomizer::RandomizerTrait;
 use evolution::domain::constants::MUTATION_PROBABILITY;
 use neuron_activation::activate_neuron::activate_neuron;
 use neuron_activation::activation_functions::ActivationFunctions;
+use neuron_activation::choose_random_activation_function::choose_random_activation_function;
 
 use self::serde::{Deserialize, Serialize};
 use std::fmt;
@@ -130,6 +131,12 @@ impl NeuronTrait for Neuron {
             }
         }
 
+        // Ask again whether it should mutate, and if it should, attempt to
+        // change its activation function
+        if Neuron::should_mutate(randomizer)? {
+            self.activation_function = choose_random_activation_function(randomizer);
+        }
+
         Ok(())
     }
     fn get_activation_function(&self) -> &ActivationFunctions {
@@ -161,6 +168,12 @@ mod tests {
                 0.4_f64
             }
             fn generate_float_from_0_to_1(&mut self) -> f64 {
+                todo!()
+            }
+            fn choose_random_from_vec<T>(&mut self, _: &[T]) -> T
+            where
+                T: std::clone::Clone,
+            {
                 todo!()
             }
         }

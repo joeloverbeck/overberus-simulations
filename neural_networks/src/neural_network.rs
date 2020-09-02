@@ -247,6 +247,12 @@ mod tests {
             fn generate_float_from_0_to_1(&mut self) -> f64 {
                 todo!()
             }
+            fn choose_random_from_vec<T>(&mut self, _: &[T]) -> T
+            where
+                T: std::clone::Clone,
+            {
+                todo!()
+            }
         }
 
         let mut randomizer = FakeRandomizer {};

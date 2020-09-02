@@ -40,9 +40,9 @@ fn main() {
 
     let mut randomizer = Randomizer::new();
 
-    let layers_definition = &[[6, 10], [10, 15], [15, 4]];
+    let layers_definition = &[[6, 40], [40, 50], [50, 40], [40, 4]];
 
-    let number_of_neural_networks = 100;
+    let number_of_neural_networks = 50;
 
     let training_population_path = "data/images_generation/training_population.json";
 
@@ -59,7 +59,7 @@ fn main() {
                     layers_definition,
                     randomizer,
                     |number_of_inputs, randomizer| {
-                        Neuron::new(number_of_inputs, ActivationFunctions::Softplus, randomizer)
+                        Neuron::new(number_of_inputs, ActivationFunctions::Swish, randomizer)
                     },
                 ))
             },
@@ -113,8 +113,8 @@ fn main() {
                     .unwrap();
 
                 generate_png_from_neural_network(
-                    80,
-                    80,
+                    256,
+                    256,
                     genome.get_neural_network(),
                     filename.as_str(),
                     randomizer,
@@ -131,7 +131,7 @@ fn main() {
             |neural_network| Genome::new(neural_network),
             || NeuralNetwork::new(),
             |number_of_inputs, randomizer| {
-                Neuron::new(number_of_inputs, ActivationFunctions::Softplus, randomizer)
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
             },
             |_generation_number, _population| {
                 console_display_controller
@@ -145,7 +145,7 @@ fn main() {
     console_display_controller
         .write_announcement(
             format!(
-                "Next generation produced, with {}",
+                "Next generation produced, with {} genomes",
                 new_population.get_size()
             )
             .as_str(),

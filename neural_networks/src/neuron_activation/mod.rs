@@ -1,5 +1,10 @@
 pub mod activate_neuron;
 pub mod activation_functions;
+pub mod choose_random_activation_function;
+pub mod cosine;
 pub mod relu;
 pub mod sigmoid;
+pub mod sinusoid;
 pub mod softplus;
+pub mod swish;
+pub mod tanh;

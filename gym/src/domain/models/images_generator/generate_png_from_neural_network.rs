@@ -32,6 +32,13 @@ pub fn generate_png_from_neural_network<
 
     create_all_directories_on_path(save_path)?;
 
+    if does_file_exist(save_path)? {
+        panic!(
+            "Was going to save image to {:?}, but there was already a file with that name in that path.",
+            save_path
+        );
+    }
+
     let mut f = std::fs::File::create(save_path).unwrap();
 
     if let Err(error) =

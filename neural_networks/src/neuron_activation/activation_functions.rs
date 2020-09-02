@@ -7,4 +7,8 @@ pub enum ActivationFunctions {
     Sigmoid,
     Relu,
     Softplus,
+    Sinusoid,
+    Tanh,
+    Cosine,
+    Swish,
 }

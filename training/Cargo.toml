@@ -7,4 +7,5 @@ authors = ["Joel Overbeck"]
 [dependencies]
 neural_networks = { path = "../neural_networks" }
 randomization = { path = "../randomization" }
-
+png_encode_mini = "0.1.2"
+chrono = "0.4"

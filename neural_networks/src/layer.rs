@@ -79,7 +79,7 @@ impl<T: NeuronTrait> LayerTrait<T> for Layer<T> {
     where
         U: RandomizerTrait,
     {
-        Ok(randomizer.generate_f64() > 1f64 - CROSSOVER_PROBABILITY)
+        Ok(randomizer.generate_float_from_0_to_1() > 1f64 - CROSSOVER_PROBABILITY)
     }
 }
 

@@ -236,7 +236,8 @@ mod tests {
             fn get_normal(&mut self) -> f64 {
                 0.4_f64
             }
-            fn generate_f64(&mut self) -> f64 {
+
+            fn generate_float_from_0_to_1(&mut self) -> f64 {
                 todo!()
             }
         }

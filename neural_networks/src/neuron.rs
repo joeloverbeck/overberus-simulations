@@ -103,7 +103,7 @@ impl NeuronTrait for Neuron {
     where
         T: RandomizerTrait,
     {
-        Ok(randomizer.generate_f64() > 1f64 - MUTATION_PROBABILITY)
+        Ok(randomizer.generate_float_from_0_to_1() > 1f64 - MUTATION_PROBABILITY)
     }
 
     fn mutate<T>(&mut self, randomizer: &mut T) -> std::result::Result<(), std::string::String>
@@ -151,7 +151,7 @@ mod tests {
             fn get_normal(&mut self) -> f64 {
                 0.4_f64
             }
-            fn generate_f64(&mut self) -> f64 {
+            fn generate_float_from_0_to_1(&mut self) -> f64 {
                 todo!()
             }
         }

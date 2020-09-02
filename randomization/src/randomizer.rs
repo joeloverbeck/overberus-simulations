@@ -7,7 +7,7 @@ use self::rand_distr::{Distribution, Normal};
 
 pub trait RandomizerTrait {
     fn get_normal(&mut self) -> f64;
-    fn generate_f64(&mut self) -> f64;
+    fn generate_float_from_0_to_1(&mut self) -> f64;
 }
 
 pub struct Randomizer {
@@ -33,7 +33,7 @@ impl RandomizerTrait for Randomizer {
         Normal::new(0.0, 1.0).unwrap().sample(&mut self.rng)
     }
 
-    fn generate_f64(&mut self) -> f64 {
+    fn generate_float_from_0_to_1(&mut self) -> f64 {
         self.rng.gen::<f64>()
     }
 }

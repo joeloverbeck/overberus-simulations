@@ -18,22 +18,25 @@ pub fn request_rgb_from_neural_network_for_i_and_j<
     image_height: u32,
     neural_network: &T,
     neural_network_outputs: &mut Vec<f64>,
-    randomizer: &mut V,
+    _randomizer: &mut V,
 ) {
+    let distance_from_top = manhattan_distance(i, j, image_width / 2, 0);
     let distance_from_top_left = manhattan_distance(i, j, 0, 0);
-    let distance_from_left = manhattan_distance(i, j, image_height / 2, 0);
-    let distance_from_center = manhattan_distance(i, j, image_height / 2, image_width / 2);
-    let distance_from_right = manhattan_distance(i, j, 0, image_width / 2);
+    let distance_from_left = manhattan_distance(i, j, 0, image_height / 2);
+    let distance_from_center = manhattan_distance(i, j, image_width / 2, image_height / 2);
+    let distance_from_right = manhattan_distance(i, j, image_width - 1, image_height / 2);
+    let distance_from_bottom = manhattan_distance(i, j, image_width / 2, image_height - 1);
     let distance_from_bottom_right = manhattan_distance(i, j, image_height - 1, image_width - 1);
 
     let outputs = neural_network
         .propagate(&[
+            (distance_from_top as f64) / (image_height as f64),
             (distance_from_top_left as f64) / (image_height as f64),
             (distance_from_left as f64) / (image_height as f64),
             (distance_from_center as f64) / (image_height as f64),
             (distance_from_right as f64) / (image_height as f64),
+            (distance_from_bottom as f64) / (image_height as f64),
             (distance_from_bottom_right as f64) / (image_height as f64),
-            randomizer.generate_float_from_0_to_1(),
         ])
         .unwrap();
 

@@ -40,7 +40,7 @@ fn main() {
 
     let mut randomizer = Randomizer::new();
 
-    let layers_definition = &[[6, 40], [40, 50], [50, 40], [40, 4]];
+    let layers_definition = &[[7, 40], [40, 50], [50, 40], [40, 4]];
 
     let number_of_neural_networks = 50;
 
@@ -98,7 +98,7 @@ fn main() {
 
                 save_json(
                     format!("data/images_generation/genome_{}.json", index + 1).as_str(),
-                    genome.get_neural_network(),
+                    genome,
                 )?;
 
                 console_display_controller

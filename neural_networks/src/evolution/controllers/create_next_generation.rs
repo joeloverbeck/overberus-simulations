@@ -1,6 +1,6 @@
 extern crate randomization;
 use self::randomization::randomizer::RandomizerTrait;
-use evolution::domain::genome::Genome;
+use evolution::domain::genome::GenomeTrait;
 use evolution::domain::genome_couple::GenomeCouple;
 use evolution::domain::mechanics::crossover_genomes::crossover_genomes;
 use evolution::domain::mechanics::mutate_genome::mutate_genome;
@@ -9,24 +9,26 @@ use evolution::domain::population::PopulationTrait;
 use neural_network::NeuralNetworkTrait;
 use neuron::NeuronTrait;
 
-type GN<T, U> = Genome<T, U>;
-
 pub fn create_next_generation<
-    T: NeuralNetworkTrait<U> + Clone,
-    U: NeuronTrait + Clone,
-    V: RandomizerTrait,
-    W: Fn() -> T,
+    T: GenomeTrait<V, W> + Clone,
+    V: NeuralNetworkTrait<W> + Clone,
+    W: NeuronTrait + Clone,
+    X: RandomizerTrait,
+    Y: Fn(V) -> T,
+    Z: Fn() -> V,
 >(
-    population: &Population<GN<T, U>, T, U>,
-    neural_network_creator: W,
-    neuron_creator: fn(u32, &mut V) -> U,
-    randomizer: &mut V,
-) -> Result<Population<GN<T, U>, T, U>, String> {
+    population: &Population<T, V, W>,
+    genome_creator: Y,
+    neural_network_creator: Z,
+    neuron_creator: fn(u32, &mut X) -> W,
+    randomizer: &mut X,
+) -> Result<Population<T, V, W>, String> {
     let mut next_generation = Population::new();
 
     for index in 0..population.get_midpoint() {
         let (mut first_child, mut second_child) = crossover_genomes(
             GenomeCouple::new(index, population)?,
+            &genome_creator,
             &neural_network_creator,
             neuron_creator,
             randomizer,

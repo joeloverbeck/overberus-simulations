@@ -6,6 +6,7 @@ use self::neural_networks::neuron::NeuronTrait;
 use self::randomization::randomizer::Randomizer;
 use neural_networks::evolution::controllers::create_next_generation::create_next_generation;
 use neural_networks::evolution::domain::create_genome::create_genome;
+use neural_networks::evolution::domain::genome::Genome;
 use neural_networks::neural_network::NeuralNetwork;
 use neural_networks::neuron::Neuron;
 
@@ -21,6 +22,7 @@ fn main() {
 
         let next_generation = create_next_generation(
             &population,
+            Genome::new,
             NeuralNetwork::new,
             |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
             &mut randomizer,

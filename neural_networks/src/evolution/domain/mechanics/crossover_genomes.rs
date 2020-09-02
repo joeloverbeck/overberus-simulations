@@ -1,7 +1,6 @@
 extern crate randomization;
 
 use self::randomization::randomizer::RandomizerTrait;
-use evolution::domain::genome::Genome;
 use evolution::domain::genome::GenomeTrait;
 use evolution::domain::genome_couple::GenomeCouple;
 use evolution::domain::layer_couple::LayerCouple;
@@ -9,20 +8,22 @@ use evolution::domain::mechanics::crossover_layers::crossover_layers;
 use neural_network::NeuralNetworkTrait;
 use neuron::NeuronTrait;
 
-type ResultCrossoverGenomes<T, U> = Result<(GN<T, U>, GN<T, U>), String>;
-type GN<T, U> = Genome<T, U>;
+type ResultCrossoverGenomes<T> = Result<(T, T), String>;
 
 pub fn crossover_genomes<
-    T: NeuralNetworkTrait<U> + Clone,
-    U: NeuronTrait + Clone,
-    V: RandomizerTrait,
-    W: Fn() -> T,
+    T: GenomeTrait<U, V> + Clone,
+    U: NeuralNetworkTrait<V> + Clone,
+    V: NeuronTrait + Clone,
+    W: RandomizerTrait,
+    X: Fn(U) -> T,
+    Y: Fn() -> U,
 >(
-    couple: GenomeCouple<T, U>,
-    neural_network_creator: &W,
-    neuron_creator: fn(u32, &mut V) -> U,
-    randomizer: &mut V,
-) -> ResultCrossoverGenomes<T, U> {
+    couple: GenomeCouple<T, U, V>,
+    genome_creator: &X,
+    neural_network_creator: &Y,
+    neuron_creator: fn(u32, &mut W) -> V,
+    randomizer: &mut W,
+) -> ResultCrossoverGenomes<T> {
     let mut first_child = neural_network_creator();
     let mut second_child = neural_network_creator();
 
@@ -48,5 +49,5 @@ pub fn crossover_genomes<
         second_child.add(c2)?;
     }
 
-    Ok((Genome::new(first_child), Genome::new(second_child)))
+    Ok((genome_creator(first_child), genome_creator(second_child)))
 }

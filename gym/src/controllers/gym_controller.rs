@@ -43,11 +43,18 @@ impl<
         }
     }
 
-    pub fn train<Y: RandomizerTrait, Z: Fn(U) -> T, A: Fn() -> U, B: Fn(u32, &mut Y) -> V>(
+    pub fn train<
+        Y: RandomizerTrait,
+        Z: Fn(U) -> T,
+        A: Fn() -> U,
+        B: Fn(u32, &mut Y) -> V,
+        C: Fn(u32, &Population<T, U, V>),
+    >(
         &mut self,
         genome_creator: Z,
         neural_network_creator: A,
         neuron_creator: B,
+        generation_training_reporter: C,
         randomizer: &mut Y,
     ) -> Result<Population<T, U, V>, String> {
         while (self.continue_condition)(self.generations) {
@@ -61,10 +68,7 @@ impl<
                 randomizer,
             )?;
 
-            println!(
-                "Generation {:?} result: {:?}",
-                self.generations, self.population
-            );
+            generation_training_reporter(self.generations, &self.population);
 
             self.generations += 1;
         }
@@ -112,10 +116,7 @@ mod tests {
                     false
                 }
             },
-            |genome| -> Result<(), String> {
-                println!("Training genome: {:?}", genome);
-                Ok(())
-            },
+            |_genomes_to_train| -> Result<(), String> { Ok(()) },
         );
 
         let mut randomizer = Randomizer::new();
@@ -124,6 +125,7 @@ mod tests {
             |neural_network| Genome::new(neural_network),
             || NeuralNetwork::new(),
             |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+            |_, _| {},
             &mut randomizer,
         )?;
 

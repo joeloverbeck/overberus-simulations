@@ -16,11 +16,12 @@ pub fn create_next_generation<
     X: RandomizerTrait,
     Y: Fn(V) -> T,
     Z: Fn() -> V,
+    A: Fn(u32, &mut X) -> W,
 >(
     population: &Population<T, V, W>,
     genome_creator: Y,
     neural_network_creator: Z,
-    neuron_creator: fn(u32, &mut X) -> W,
+    neuron_creator: A,
     randomizer: &mut X,
 ) -> Result<Population<T, V, W>, String> {
     let mut next_generation = Population::new();
@@ -30,7 +31,7 @@ pub fn create_next_generation<
             GenomeCouple::new(index, population)?,
             &genome_creator,
             &neural_network_creator,
-            neuron_creator,
+            &neuron_creator,
             randomizer,
         )?;
 

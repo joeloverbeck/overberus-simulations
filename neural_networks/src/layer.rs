@@ -23,11 +23,11 @@ pub struct Layer<T: NeuronTrait> {
 }
 
 impl<T: NeuronTrait> Layer<T> {
-    pub fn create_layer<U: RandomizerTrait>(
+    pub fn create_layer<U: RandomizerTrait, V: Fn(u32, &mut U) -> T>(
         number_of_inputs: u32,
         number_of_neurons: u32,
         randomizer: &mut U,
-        neuron_creator: fn(u32, &mut U) -> T,
+        neuron_creator: V,
     ) -> Layer<T> {
         Layer::<T> {
             number_of_inputs,

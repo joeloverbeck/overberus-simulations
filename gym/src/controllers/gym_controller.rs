@@ -3,7 +3,7 @@ extern crate randomization;
 
 use self::neural_networks::evolution::domain::population::Population;
 use self::neural_networks::evolution::domain::population::PopulationTrait;
-//use controllers::gym_controller::neural_networks::evolution::controllers::create_next_generation::create_next_generation;
+use controllers::gym_controller::neural_networks::evolution::controllers::create_next_generation::create_next_generation;
 use controllers::gym_controller::neural_networks::evolution::domain::genome::GenomeTrait;
 use controllers::gym_controller::neural_networks::neural_network::NeuralNetworkTrait;
 use controllers::gym_controller::neural_networks::neuron::NeuronTrait;
@@ -20,8 +20,11 @@ pub struct GymController<
     train_genome: fn(&mut T) -> Result<(), String>,
 }
 
-impl<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTrait + Clone>
-    GymController<T, U, V>
+impl<
+        T: GenomeTrait<U, V> + Clone + std::fmt::Debug,
+        U: NeuralNetworkTrait<V> + Clone,
+        V: NeuronTrait + Clone,
+    > GymController<T, U, V>
 {
     pub fn new(
         population: Population<T, U, V>,
@@ -36,16 +39,30 @@ impl<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTr
         }
     }
 
-    pub fn train<W: RandomizerTrait>(
+    pub fn train<W: RandomizerTrait, X: Fn(U) -> T, Y: Fn() -> U, Z: Fn(u32, &mut W) -> V>(
         &mut self,
-        _randomizer: &mut W,
+        genome_creator: X,
+        neural_network_creator: Y,
+        neuron_creator: Z,
+        randomizer: &mut W,
     ) -> Result<Population<T, U, V>, String> {
         while (self.continue_condition)(self.generations) {
             for genome in self.population.get_genomes_mut()? {
                 (self.train_genome)(genome)?;
             }
 
-            //create_next_generation(&self.population, randomizer)?;
+            self.population = create_next_generation(
+                &self.population,
+                &genome_creator,
+                &neural_network_creator,
+                &neuron_creator,
+                randomizer,
+            )?;
+
+            println!(
+                "Generation {:?} result: {:?}",
+                self.generations, self.population
+            );
 
             self.generations += 1;
         }
@@ -62,6 +79,9 @@ impl<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTr
 mod tests {
 
     use super::*;
+    use controllers::gym_controller::neural_networks::evolution::domain::genome::Genome;
+    use controllers::gym_controller::neural_networks::neural_network::NeuralNetwork;
+    use controllers::gym_controller::neural_networks::neuron::Neuron;
 
     use self::neural_networks::evolution::domain::create_genome::create_genome;
 
@@ -98,7 +118,12 @@ mod tests {
 
         let mut randomizer = Randomizer::new();
 
-        let trained_population = sut.train(&mut randomizer)?;
+        let trained_population = sut.train(
+            |neural_network| Genome::new(neural_network),
+            || NeuralNetwork::new(),
+            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+            &mut randomizer,
+        )?;
 
         assert_eq!(trained_population.get_size(), 10);
         assert_eq!(sut.get_generations(), 10);

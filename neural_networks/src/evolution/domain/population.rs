@@ -3,11 +3,8 @@ extern crate serde;
 
 use self::randomization::randomizer::RandomizerTrait;
 use self::serde::{Deserialize, Serialize};
-use evolution::domain::genome::Genome;
 use evolution::domain::genome::GenomeTrait;
-use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
-use neuron::Neuron;
 use neuron::NeuronTrait;
 use std::fmt;
 use std::marker::PhantomData;
@@ -33,8 +30,11 @@ pub struct Population<
     phantom_v: PhantomData<V>,
 }
 
-impl fmt::Debug
-    for Population<Genome<NeuralNetwork<Neuron>, Neuron>, NeuralNetwork<Neuron>, Neuron>
+impl<
+        T: GenomeTrait<U, V> + Clone + std::fmt::Debug,
+        U: NeuralNetworkTrait<V> + Clone,
+        V: NeuronTrait + Clone,
+    > fmt::Debug for Population<T, U, V>
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "--Population (size: {})--", self.get_size())?;
@@ -136,8 +136,10 @@ mod tests {
     use super::*;
     use evolution::controllers::create_next_generation::create_next_generation;
     use evolution::domain::create_genome::create_genome;
+    use evolution::domain::genome::Genome;
     use layer::Layer;
     use layer::LayerTrait;
+    use neural_network::NeuralNetwork;
     use neuron::Neuron;
 
     #[test]

@@ -17,11 +17,12 @@ pub fn crossover_genomes<
     W: RandomizerTrait,
     X: Fn(U) -> T,
     Y: Fn() -> U,
+    Z: Fn(u32, &mut W) -> V,
 >(
     couple: GenomeCouple<T, U, V>,
     genome_creator: &X,
     neural_network_creator: &Y,
-    neuron_creator: fn(u32, &mut W) -> V,
+    neuron_creator: Z,
     randomizer: &mut W,
 ) -> ResultCrossoverGenomes<T> {
     let mut first_child = neural_network_creator();
@@ -43,7 +44,7 @@ pub fn crossover_genomes<
         let (c1, c2) = crossover_layers(
             LayerCouple::new(first_layer, second_layer)?,
             randomizer,
-            neuron_creator,
+            &neuron_creator,
         )?;
         first_child.add(c1)?;
         second_child.add(c2)?;

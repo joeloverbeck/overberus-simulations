@@ -1,9 +1,7 @@
 extern crate serde;
 
 use self::serde::{Deserialize, Serialize};
-use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
-use neuron::Neuron;
 use neuron::NeuronTrait;
 use std::fmt;
 use std::marker::PhantomData;
@@ -35,7 +33,7 @@ impl<T: NeuralNetworkTrait<U>, U: NeuronTrait> Genome<T, U> {
     }
 }
 
-impl fmt::Debug for Genome<NeuralNetwork<Neuron>, Neuron> {
+impl<T: NeuralNetworkTrait<U> + std::fmt::Debug, U: NeuronTrait> fmt::Debug for Genome<T, U> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "--Genome (fitness: {})--", self.fitness)?;
         writeln!(f, "--> Neural network:")?;
@@ -69,6 +67,7 @@ mod tests {
     use neural_network::NeuralNetwork;
     extern crate randomization;
     use self::randomization::randomizer::Randomizer;
+    use neuron::Neuron;
 
     use super::*;
 

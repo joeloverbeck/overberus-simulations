@@ -8,10 +8,10 @@ use layer::Layer;
 use layer::LayerTrait;
 use neuron::NeuronTrait;
 
-pub fn crossover_layers<T: NeuronTrait, U: RandomizerTrait>(
+pub fn crossover_layers<T: NeuronTrait, U: RandomizerTrait, V: Fn(u32, &mut U) -> T>(
     layer_couple: LayerCouple<T>,
     randomizer: &mut U,
-    neuron_creator: fn(u32, &mut U) -> T,
+    neuron_creator: &V,
 ) -> Result<(Layer<T>, Layer<T>), String> {
     let mut first_child =
         produce_child_for_crossover(layer_couple.get_first_parent(), randomizer, neuron_creator)?;

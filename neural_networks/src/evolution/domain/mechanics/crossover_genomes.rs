@@ -6,19 +6,25 @@ use evolution::domain::genome::GenomeTrait;
 use evolution::domain::genome_couple::GenomeCouple;
 use evolution::domain::layer_couple::LayerCouple;
 use evolution::domain::mechanics::crossover_layers::crossover_layers;
-use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
 use neuron::NeuronTrait;
 
-type GN<T> = Genome<NeuralNetwork<T>, T>;
+type ResultCrossoverGenomes<T, U> = Result<(GN<T, U>, GN<T, U>), String>;
+type GN<T, U> = Genome<T, U>;
 
-pub fn crossover_genomes<T: NeuronTrait + Clone, U: RandomizerTrait>(
-    couple: GenomeCouple<T>,
-    randomizer: &mut U,
-    neuron_creator: fn(u32, &mut U) -> T,
-) -> Result<(GN<T>, GN<T>), String> {
-    let mut first_child = NeuralNetwork::new();
-    let mut second_child = NeuralNetwork::new();
+pub fn crossover_genomes<
+    T: NeuralNetworkTrait<U> + Clone,
+    U: NeuronTrait + Clone,
+    V: RandomizerTrait,
+    W: Fn() -> T,
+>(
+    couple: GenomeCouple<T, U>,
+    neural_network_creator: &W,
+    neuron_creator: fn(u32, &mut V) -> U,
+    randomizer: &mut V,
+) -> ResultCrossoverGenomes<T, U> {
+    let mut first_child = neural_network_creator();
+    let mut second_child = neural_network_creator();
 
     for (first_layer, second_layer) in couple
         .get_first_parent()

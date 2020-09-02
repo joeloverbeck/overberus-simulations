@@ -388,6 +388,7 @@ mod tests {
 
         let next_generation = create_next_generation(
             &population,
+            || NeuralNetwork::new(),
             |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
             &mut randomizer,
         )?;

@@ -1,19 +1,19 @@
 use evolution::domain::genome::Genome;
 use evolution::domain::population::Population;
 use evolution::domain::population::PopulationTrait;
-use neural_network::NeuralNetwork;
+use neural_network::NeuralNetworkTrait;
 use neuron::NeuronTrait;
 
-pub struct GenomeCouple<'a, T: NeuronTrait + Clone> {
-    first_parent: &'a Genome<NeuralNetwork<T>, T>,
-    second_parent: &'a Genome<NeuralNetwork<T>, T>,
+pub struct GenomeCouple<'a, T: NeuralNetworkTrait<U> + Clone, U: NeuronTrait + Clone> {
+    first_parent: &'a Genome<T, U>,
+    second_parent: &'a Genome<T, U>,
 }
 
-impl<T: NeuronTrait + Clone> GenomeCouple<'_, T> {
+impl<T: NeuralNetworkTrait<U> + Clone, U: NeuronTrait + Clone> GenomeCouple<'_, T, U> {
     pub fn new(
         index: u32,
-        population: &Population<Genome<NeuralNetwork<T>, T>, NeuralNetwork<T>, T>,
-    ) -> Result<GenomeCouple<T>, String> {
+        population: &Population<Genome<T, U>, T, U>,
+    ) -> Result<GenomeCouple<T, U>, String> {
         let sorted_index = population.get_sorted_index();
 
         Ok(GenomeCouple {
@@ -22,11 +22,11 @@ impl<T: NeuronTrait + Clone> GenomeCouple<'_, T> {
         })
     }
 
-    pub fn get_first_parent(&self) -> &Genome<NeuralNetwork<T>, T> {
+    pub fn get_first_parent(&self) -> &Genome<T, U> {
         self.first_parent
     }
 
-    pub fn get_second_parent(&self) -> &Genome<NeuralNetwork<T>, T> {
+    pub fn get_second_parent(&self) -> &Genome<T, U> {
         self.second_parent
     }
 }

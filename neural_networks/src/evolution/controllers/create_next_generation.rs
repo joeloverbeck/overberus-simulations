@@ -6,23 +6,30 @@ use evolution::domain::mechanics::crossover_genomes::crossover_genomes;
 use evolution::domain::mechanics::mutate_genome::mutate_genome;
 use evolution::domain::population::Population;
 use evolution::domain::population::PopulationTrait;
-use neural_network::NeuralNetwork;
+use neural_network::NeuralNetworkTrait;
 use neuron::NeuronTrait;
 
-type GN<T> = Genome<NeuralNetwork<T>, T>;
+type GN<T, U> = Genome<T, U>;
 
-pub fn create_next_generation<T: NeuronTrait + Clone, U: RandomizerTrait>(
-    population: &Population<GN<T>, NeuralNetwork<T>, T>,
-    neuron_creator: fn(u32, &mut U) -> T,
-    randomizer: &mut U,
-) -> Result<Population<GN<T>, NeuralNetwork<T>, T>, String> {
+pub fn create_next_generation<
+    T: NeuralNetworkTrait<U> + Clone,
+    U: NeuronTrait + Clone,
+    V: RandomizerTrait,
+    W: Fn() -> T,
+>(
+    population: &Population<GN<T, U>, T, U>,
+    neural_network_creator: W,
+    neuron_creator: fn(u32, &mut V) -> U,
+    randomizer: &mut V,
+) -> Result<Population<GN<T, U>, T, U>, String> {
     let mut next_generation = Population::new();
 
     for index in 0..population.get_midpoint() {
         let (mut first_child, mut second_child) = crossover_genomes(
             GenomeCouple::new(index, population)?,
-            randomizer,
+            &neural_network_creator,
             neuron_creator,
+            randomizer,
         )?;
 
         mutate_genome(&mut first_child, randomizer)?;

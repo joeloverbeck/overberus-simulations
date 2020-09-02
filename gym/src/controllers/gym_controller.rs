@@ -14,12 +14,12 @@ pub struct GymController<
     U: NeuralNetworkTrait<V> + Clone,
     V: NeuronTrait + Clone,
     W: Fn(u32) -> bool,
-    X: Fn(&mut T) -> Result<(), String>,
+    X: Fn(&mut Vec<T>) -> Result<(), String>,
 > {
     population: Population<T, U, V>,
     generations: u32,
     continue_condition: W,
-    train_genome: X,
+    train_genomes: X,
 }
 
 impl<
@@ -27,19 +27,19 @@ impl<
         U: NeuralNetworkTrait<V> + Clone,
         V: NeuronTrait + Clone,
         W: Fn(u32) -> bool,
-        X: Fn(&mut T) -> Result<(), String>,
+        X: Fn(&mut Vec<T>) -> Result<(), String>,
     > GymController<T, U, V, W, X>
 {
     pub fn new(
         population: Population<T, U, V>,
         continue_condition: W,
-        train_genome: X,
+        train_genomes: X,
     ) -> GymController<T, U, V, W, X> {
         GymController {
             population,
             generations: 0,
             continue_condition,
-            train_genome,
+            train_genomes,
         }
     }
 
@@ -51,9 +51,7 @@ impl<
         randomizer: &mut Y,
     ) -> Result<Population<T, U, V>, String> {
         while (self.continue_condition)(self.generations) {
-            for genome in self.population.get_genomes_mut()? {
-                (self.train_genome)(genome)?;
-            }
+            (self.train_genomes)(self.population.get_genomes_mut()?)?;
 
             self.population = create_next_generation(
                 &self.population,

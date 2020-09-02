@@ -6,6 +6,7 @@ use neural_network::NeuralNetwork;
 use neural_network::NeuralNetworkTrait;
 use neuron::Neuron;
 use neuron::NeuronTrait;
+use neuron_activation::activation_functions::ActivationFunctions;
 
 pub fn create_genome(
     layers_definition: &[[usize; 2]],
@@ -14,6 +15,8 @@ pub fn create_genome(
     Genome::new(NeuralNetwork::new_with_specified_layers(
         layers_definition,
         randomizer,
-        |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+        |number_of_inputs, randomizer| {
+            Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
+        },
     ))
 }

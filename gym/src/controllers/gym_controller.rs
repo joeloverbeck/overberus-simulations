@@ -8,18 +8,27 @@ use controllers::gym_controller::neural_networks::evolution::domain::genome::Gen
 use controllers::gym_controller::neural_networks::neural_network::NeuralNetworkTrait;
 use controllers::gym_controller::neural_networks::neuron::NeuronTrait;
 use controllers::gym_controller::randomization::randomizer::RandomizerTrait;
+use std::marker::PhantomData;
 
+/// Handles training a previously created population of genomes (which are neural networks).
+///
+/// The user is able to pass the condition to continue as a closure ( Fn(u32) -> bool ), as well as another closure
+/// that will receive all the genomes of a generation in order to train them ( Fn(&mut Vec<T>, &mut Y) -> Result<(), String> ),
+/// according to the specificities of the model the user is implementing.
+///
 pub struct GymController<
     T: GenomeTrait<U, V> + Clone,
     U: NeuralNetworkTrait<V> + Clone,
     V: NeuronTrait + Clone,
     W: Fn(u32) -> bool,
-    X: Fn(&mut Vec<T>) -> Result<(), String>,
+    X: Fn(&mut Vec<T>, &mut Y) -> Result<(), String>,
+    Y: RandomizerTrait,
 > {
     population: Population<T, U, V>,
     generations: u32,
     continue_condition: W,
     train_genomes: X,
+    phantom_y: PhantomData<Y>,
 }
 
 impl<
@@ -27,24 +36,25 @@ impl<
         U: NeuralNetworkTrait<V> + Clone,
         V: NeuronTrait + Clone,
         W: Fn(u32) -> bool,
-        X: Fn(&mut Vec<T>) -> Result<(), String>,
-    > GymController<T, U, V, W, X>
+        X: Fn(&mut Vec<T>, &mut Y) -> Result<(), String>,
+        Y: RandomizerTrait,
+    > GymController<T, U, V, W, X, Y>
 {
     pub fn new(
         population: Population<T, U, V>,
         continue_condition: W,
         train_genomes: X,
-    ) -> GymController<T, U, V, W, X> {
+    ) -> GymController<T, U, V, W, X, Y> {
         GymController {
             population,
             generations: 0,
             continue_condition,
             train_genomes,
+            phantom_y: PhantomData,
         }
     }
 
     pub fn train<
-        Y: RandomizerTrait,
         Z: Fn(U) -> T,
         A: Fn() -> U,
         B: Fn(u32, &mut Y) -> V,
@@ -58,7 +68,7 @@ impl<
         randomizer: &mut Y,
     ) -> Result<Population<T, U, V>, String> {
         while (self.continue_condition)(self.generations) {
-            (self.train_genomes)(self.population.get_genomes_mut()?)?;
+            (self.train_genomes)(self.population.get_genomes_mut()?, randomizer)?;
 
             self.population = create_next_generation(
                 &self.population,
@@ -84,6 +94,7 @@ impl<
 #[cfg(test)]
 mod tests {
 
+    use self::neural_networks::neuron_activation::activation_functions::ActivationFunctions;
     use super::*;
     use controllers::gym_controller::neural_networks::evolution::domain::genome::Genome;
     use controllers::gym_controller::neural_networks::neural_network::NeuralNetwork;
@@ -116,7 +127,7 @@ mod tests {
                     false
                 }
             },
-            |_genomes_to_train| -> Result<(), String> { Ok(()) },
+            |_genomes_to_train, _randomizer| -> Result<(), String> { Ok(()) },
         );
 
         let mut randomizer = Randomizer::new();
@@ -124,7 +135,9 @@ mod tests {
         let trained_population = sut.train(
             |neural_network| Genome::new(neural_network),
             || NeuralNetwork::new(),
-            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+            |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
+            },
             |_, _| {},
             &mut randomizer,
         )?;

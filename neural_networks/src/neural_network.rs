@@ -120,6 +120,7 @@ mod tests {
     use neural_network::tests::file_system::read_file_to_string::read_file_to_string;
     use neural_network::tests::file_system::save_json::save_json;
     use neuron::Neuron;
+    use neuron_activation::activation_functions::ActivationFunctions;
 
     use neural_network::randomization::randomizer::Randomizer;
 
@@ -142,7 +143,9 @@ mod tests {
         let nn = NeuralNetwork::<Neuron>::new_with_specified_layers(
             &[[4, 3], [3, 2], [2, 1]],
             &mut randomizer,
-            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+            |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
+            },
         );
         assert_eq!(nn.get_number_of_layers(), 3);
         assert_eq!(nn.get_layer(0).get_number_of_inputs(), 4);
@@ -163,15 +166,15 @@ mod tests {
 
         let layer1 =
             Layer::<Neuron>::create_layer(3, 2, &mut randomizer, |number_of_inputs, randomizer| {
-                Neuron::new(number_of_inputs, randomizer)
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
             });
         let layer2 =
             Layer::<Neuron>::create_layer(2, 1, &mut randomizer, |number_of_inputs, randomizer| {
-                Neuron::new(number_of_inputs, randomizer)
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
             });
         let layer3 =
             Layer::<Neuron>::create_layer(3, 1, &mut randomizer, |number_of_inputs, randomizer| {
-                Neuron::new(number_of_inputs, randomizer)
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
             });
 
         if let Err(error) = neural_network.add(layer1) {
@@ -194,7 +197,9 @@ mod tests {
         let neural_network = NeuralNetwork::<Neuron>::new_with_specified_layers(
             &[[3, 2], [2, 1]],
             &mut randomizer,
-            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+            |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
+            },
         );
 
         let inputs = vec![0.0_f64, 1.0_f64];
@@ -214,7 +219,9 @@ mod tests {
         let neural_network = NeuralNetwork::<Neuron>::new_with_specified_layers(
             &[[3, 2], [2, 1]],
             &mut randomizer,
-            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+            |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
+            },
         );
 
         let inputs = vec![0.0_f64, 1.0_f64, 0.0_f64];
@@ -247,7 +254,9 @@ mod tests {
         let neural_network = NeuralNetwork::<Neuron>::new_with_specified_layers(
             &[[3, 2], [2, 2], [2, 2]],
             &mut randomizer,
-            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+            |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
+            },
         );
 
         let inputs = vec![0.0_f64, 1.0_f64, 0.0_f64];
@@ -270,7 +279,9 @@ mod tests {
         let neural_network = NeuralNetwork::<Neuron>::new_with_specified_layers(
             &[[3, 2], [2, 2], [2, 2]],
             &mut randomizer,
-            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+            |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
+            },
         );
 
         let serialized = serde_json::to_string(&neural_network).unwrap();
@@ -304,7 +315,9 @@ mod tests {
         let neural_network = NeuralNetwork::<Neuron>::new_with_specified_layers(
             &[[3, 2], [2, 2], [2, 2]],
             &mut randomizer,
-            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+            |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
+            },
         );
 
         use self::file_system::does_file_exist::does_file_exist;

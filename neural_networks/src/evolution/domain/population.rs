@@ -141,6 +141,7 @@ mod tests {
     use layer::LayerTrait;
     use neural_network::NeuralNetwork;
     use neuron::Neuron;
+    use neuron_activation::activation_functions::ActivationFunctions;
 
     #[test]
     fn test_can_create_empty_population_of_neural_networks() -> Result<(), String> {
@@ -244,7 +245,9 @@ mod tests {
                 Genome::new(NeuralNetwork::new_with_specified_layers(
                     layers_definition,
                     randomizer,
-                    |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+                    |number_of_inputs, randomizer| {
+                        Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
+                    },
                 ))
             },
             &mut randomizer,
@@ -288,11 +291,11 @@ mod tests {
 
         let layer1 =
             Layer::<Neuron>::create_layer(3, 2, &mut randomizer, |number_of_inputs, randomizer| {
-                Neuron::new(number_of_inputs, randomizer)
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
             });
         let layer2 =
             Layer::<Neuron>::create_layer(2, 1, &mut randomizer, |number_of_inputs, randomizer| {
-                Neuron::new(number_of_inputs, randomizer)
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
             });
 
         neural_network1.add(layer1)?;
@@ -306,11 +309,11 @@ mod tests {
 
         let layer1 =
             Layer::<Neuron>::create_layer(3, 2, &mut randomizer, |number_of_inputs, randomizer| {
-                Neuron::new(number_of_inputs, randomizer)
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
             });
         let layer2 =
             Layer::<Neuron>::create_layer(2, 1, &mut randomizer, |number_of_inputs, randomizer| {
-                Neuron::new(number_of_inputs, randomizer)
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
             });
 
         neural_network2.add(layer1)?;
@@ -358,11 +361,11 @@ mod tests {
 
         let layer1 =
             Layer::<Neuron>::create_layer(3, 2, &mut randomizer, |number_of_inputs, randomizer| {
-                Neuron::new(number_of_inputs, randomizer)
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
             });
         let layer2 =
             Layer::<Neuron>::create_layer(2, 1, &mut randomizer, |number_of_inputs, randomizer| {
-                Neuron::new(number_of_inputs, randomizer)
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
             });
 
         neural_network.add(layer1)?;
@@ -392,7 +395,9 @@ mod tests {
             &population,
             Genome::new,
             || NeuralNetwork::new(),
-            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+            |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
+            },
             &mut randomizer,
         )?;
 

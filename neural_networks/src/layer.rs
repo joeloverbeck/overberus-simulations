@@ -90,12 +90,13 @@ mod tests {
     use super::*;
     use layer::randomization::randomizer::Randomizer;
     use neuron::Neuron;
+    use neuron_activation::activation_functions::ActivationFunctions;
 
     fn setup_layer() -> Layer<Neuron> {
         let mut randomizer = Randomizer::new();
 
         Layer::<Neuron>::create_layer(3, 2, &mut randomizer, |number_of_inputs, randomizer| {
-            Neuron::new(number_of_inputs, randomizer)
+            Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
         })
     }
 

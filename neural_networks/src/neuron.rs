@@ -10,7 +10,11 @@ use self::serde::{Deserialize, Serialize};
 use std::fmt;
 
 pub trait NeuronTrait {
-    fn new<T: RandomizerTrait>(number_of_inputs: u32, randomizer: &mut T) -> Self;
+    fn new<T: RandomizerTrait>(
+        number_of_inputs: u32,
+        activation_function: ActivationFunctions,
+        randomizer: &mut T,
+    ) -> Self;
     fn get_number_of_weights(&self) -> u32;
     fn activate(&self, inputs: &[f64]) -> Result<f64, String>;
     fn get_bias(&self) -> f64;
@@ -48,7 +52,11 @@ impl fmt::Debug for Neuron {
 }
 
 impl NeuronTrait for Neuron {
-    fn new<T>(number_of_inputs: u32, randomizer: &mut T) -> Self
+    fn new<T>(
+        number_of_inputs: u32,
+        activation_function: ActivationFunctions,
+        randomizer: &mut T,
+    ) -> Self
     where
         T: RandomizerTrait,
     {
@@ -57,7 +65,7 @@ impl NeuronTrait for Neuron {
                 .map(|_| randomizer.get_normal())
                 .collect(),
             bias: randomizer.get_normal(),
-            activation_function: ActivationFunctions::Sigmoid,
+            activation_function,
         }
     }
 
@@ -140,6 +148,7 @@ impl NeuronTrait for Neuron {
 mod tests {
 
     use super::*;
+    use neuron_activation::activation_functions::ActivationFunctions;
 
     #[test]
     fn test_after_creating_a_neuron_it_has_expected_properties() -> Result<(), String> {
@@ -158,7 +167,11 @@ mod tests {
 
         let mut randomizer = FakeRandomizer {};
 
-        let neuron = Neuron::new(number_of_inputs, &mut randomizer);
+        let neuron = Neuron::new(
+            number_of_inputs,
+            ActivationFunctions::Sigmoid,
+            &mut randomizer,
+        );
 
         let inputs = vec![0.0_f64, 1.0_f64, 0.0_f64];
 

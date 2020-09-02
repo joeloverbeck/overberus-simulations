@@ -1,3 +1,4 @@
+pub mod create_all_directories_on_path;
 pub mod deserialize_json_from_string;
 pub mod does_file_exist;
 pub mod get_file;

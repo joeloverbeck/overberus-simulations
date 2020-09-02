@@ -2,19 +2,12 @@ extern crate serde;
 extern crate serde_json;
 
 use self::serde::Serialize;
+use create_all_directories_on_path::create_all_directories_on_path;
 
-use std::fs::{create_dir_all, File};
-
-use std::path::Path;
+use std::fs::File;
 
 pub fn save_json<T: Serialize>(file_path: &str, value_to_serialize: &T) -> Result<(), String> {
-    let path = Path::new(file_path);
-
-    if let Some(directories) = path.parent() {
-        if let Err(error) = create_dir_all(directories) {
-            panic!("Attempted to create all directories missing in path {:?}, but failed with the following error: {:?}", file_path, error);
-        }
-    }
+    create_all_directories_on_path(file_path)?;
 
     match &File::create(file_path) {
         Ok(file) => {

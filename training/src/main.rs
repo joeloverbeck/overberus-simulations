@@ -9,6 +9,7 @@ use neural_networks::evolution::domain::create_genome::create_genome;
 use neural_networks::evolution::domain::genome::Genome;
 use neural_networks::neural_network::NeuralNetwork;
 use neural_networks::neuron::Neuron;
+use neural_networks::neuron_activation::activation_functions::ActivationFunctions;
 
 fn main() {
     let mut randomizer = Randomizer::new();
@@ -24,7 +25,9 @@ fn main() {
             &population,
             Genome::new,
             NeuralNetwork::new,
-            |number_of_inputs, randomizer| Neuron::new(number_of_inputs, randomizer),
+            |number_of_inputs, randomizer| {
+                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
+            },
             &mut randomizer,
         );
 

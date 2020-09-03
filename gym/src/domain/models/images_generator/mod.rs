@@ -1,4 +1,8 @@
+pub mod create_new_population;
+pub mod create_population_with_stored_genomes;
 pub mod generate_pixels_from_neural_network;
 pub mod generate_png_from_neural_network;
 pub mod normalize_to_rgba_range;
+pub mod process_generation_of_images_from_neural_networks;
 pub mod request_rgb_from_neural_network_for_i_and_j;
+pub mod save_evolved_population;

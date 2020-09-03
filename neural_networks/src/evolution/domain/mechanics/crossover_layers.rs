@@ -1,6 +1,7 @@
 extern crate randomization;
 use self::randomization::randomizer::RandomizerTrait;
 use evolution::domain::layer_couple::LayerCouple;
+use evolution::domain::mechanics::crossover_activation_functions_of_neurons::crossover_activation_functions_of_neurons;
 use evolution::domain::mechanics::crossover_biases_of_neurons::crossover_biases_of_neurons;
 use evolution::domain::mechanics::crossover_weights_of_neurons::crossover_weights_of_neurons;
 use evolution::domain::mechanics::produce_child_for_crossover::produce_child_for_crossover;
@@ -31,6 +32,14 @@ pub fn crossover_layers<T: NeuronTrait, U: RandomizerTrait, V: Fn(u32, &mut U) -
         )?;
 
         crossover_weights_of_neurons(
+            &layer_couple,
+            &mut first_child,
+            &mut second_child,
+            index,
+            randomizer,
+        )?;
+
+        crossover_activation_functions_of_neurons(
             &layer_couple,
             &mut first_child,
             &mut second_child,

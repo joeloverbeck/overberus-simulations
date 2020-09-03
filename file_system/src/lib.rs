@@ -6,4 +6,5 @@ pub mod get_file;
 pub mod get_filenames_from_directory_that_end_with_extension;
 pub mod read_file_to_string;
 pub mod remove_file;
+pub mod remove_files_with_extension_in_directory;
 pub mod save_json;

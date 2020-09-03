@@ -1,3 +1,4 @@
+pub mod crossover_activation_functions_of_neurons;
 pub mod crossover_biases_of_neurons;
 pub mod crossover_genomes;
 pub mod crossover_layers;

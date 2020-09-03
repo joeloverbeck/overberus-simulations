@@ -1,7 +1,9 @@
+pub mod are_there_filenames_with_extension_in_directory;
 pub mod create_all_directories_on_path;
 pub mod deserialize_json_from_string;
 pub mod does_file_exist;
 pub mod get_file;
+pub mod get_filenames_from_directory_that_end_with_extension;
 pub mod read_file_to_string;
 pub mod remove_file;
 pub mod save_json;

@@ -21,54 +21,63 @@ pub struct GymController<
     U: NeuralNetworkTrait<V> + Clone,
     V: NeuronTrait + Clone,
     W: Fn(u32) -> bool,
-    X: Fn(&mut Vec<T>, &mut Y) -> Result<(), String>,
-    Y: RandomizerTrait,
+    X: Fn(&mut Vec<T>, &mut Z) -> Result<(), String>,
+    Y: Fn(&Population<T, U, V>) -> Result<(), String>,
+    Z: RandomizerTrait,
 > {
     population: Population<T, U, V>,
     generations: u32,
     continue_condition: W,
     train_genomes: X,
+    operation_to_perform_on_evolved_population: Y,
     phantom_y: PhantomData<Y>,
+    phantom_z: PhantomData<Z>,
 }
 
 impl<
-        T: GenomeTrait<U, V> + Clone + std::fmt::Debug,
+        T: GenomeTrait<U, V> + Clone,
         U: NeuralNetworkTrait<V> + Clone,
         V: NeuronTrait + Clone,
         W: Fn(u32) -> bool,
-        X: Fn(&mut Vec<T>, &mut Y) -> Result<(), String>,
-        Y: RandomizerTrait,
-    > GymController<T, U, V, W, X, Y>
+        X: Fn(&mut Vec<T>, &mut Z) -> Result<(), String>,
+        Y: Fn(&Population<T, U, V>) -> Result<(), String>,
+        Z: RandomizerTrait,
+    > GymController<T, U, V, W, X, Y, Z>
 {
     pub fn new(
         population: Population<T, U, V>,
         continue_condition: W,
         train_genomes: X,
-    ) -> GymController<T, U, V, W, X, Y> {
+        operation_to_perform_on_evolved_population: Y,
+    ) -> GymController<T, U, V, W, X, Y, Z> {
         GymController {
             population,
             generations: 0,
             continue_condition,
             train_genomes,
+            operation_to_perform_on_evolved_population,
             phantom_y: PhantomData,
+            phantom_z: PhantomData,
         }
     }
 
     pub fn train<
-        Z: Fn(u32, U) -> T,
-        A: Fn() -> U,
-        B: Fn(u32, &mut Y) -> V,
-        C: Fn(u32, &Population<T, U, V>),
+        A: Fn(u32, U) -> T,
+        B: Fn() -> U,
+        C: Fn(u32, &mut Z) -> V,
+        D: Fn(u32, &Population<T, U, V>),
     >(
         &mut self,
-        genome_creator: Z,
-        neural_network_creator: A,
-        neuron_creator: B,
-        generation_training_reporter: C,
-        randomizer: &mut Y,
+        genome_creator: A,
+        neural_network_creator: B,
+        neuron_creator: C,
+        generation_training_reporter: D,
+        randomizer: &mut Z,
     ) -> Result<Population<T, U, V>, String> {
         while (self.continue_condition)(self.generations) {
             (self.train_genomes)(self.population.get_genomes_mut()?, randomizer)?;
+
+            let population_size_before_evolving = self.population.get_size();
 
             self.population = create_next_generation(
                 &self.population,
@@ -78,7 +87,11 @@ impl<
                 randomizer,
             )?;
 
+            assert_eq!(population_size_before_evolving, self.population.get_size());
+
             generation_training_reporter(self.generations, &self.population);
+
+            (self.operation_to_perform_on_evolved_population)(&self.population)?;
 
             self.generations += 1;
         }
@@ -128,6 +141,7 @@ mod tests {
                 }
             },
             |_genomes_to_train, _randomizer| -> Result<(), String> { Ok(()) },
+            |_evolved_population| Ok(()),
         );
 
         let mut randomizer = Randomizer::new();

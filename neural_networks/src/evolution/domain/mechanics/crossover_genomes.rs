@@ -50,8 +50,10 @@ pub fn crossover_genomes<
         second_child.add(c2)?;
     }
 
+    // Note: the 0 as an identifier is because the identifiers can't be set here.
+    // A later process should set the identifiers for the whole population.
     Ok((
-        genome_creator(couple.get_first_parent().get_identifier(), first_child),
-        genome_creator(couple.get_second_parent().get_identifier(), second_child),
+        genome_creator(0, first_child),
+        genome_creator(0, second_child),
     ))
 }

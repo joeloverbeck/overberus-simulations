@@ -45,5 +45,15 @@ pub fn create_next_generation<
         }
     }
 
+    // Give new identifiers to the genomes.
+    (0..next_generation.get_size()).for_each(|index| {
+        next_generation.get_genomes_mut().unwrap()[index as usize].set_identifier(index + 1);
+    });
+
+    assert!(!next_generation
+        .get_genomes()?
+        .iter()
+        .any(|evolved_genome| evolved_genome.get_identifier() == 0));
+
     Ok(next_generation)
 }

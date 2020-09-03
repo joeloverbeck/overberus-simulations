@@ -38,6 +38,30 @@ fn reset_console_output_to_normal(buffer: &mut Buffer) -> Result<&mut Buffer, St
     Ok(buffer)
 }
 
+fn write_instruction<'a>(text: &str, buffer: &'a mut Buffer) -> Result<&'a mut Buffer, String> {
+    // Write the instruction "tag".
+
+    if let Err(error) = buffer.set_color(
+        ColorSpec::new()
+            .set_fg(Some(Color::Yellow))
+            .set_bg(Some(Color::Black)),
+    ) {
+        return Err(error.to_string());
+    }
+
+    let instruction_tag = "  [<>]".to_string();
+
+    if let Err(error) = write!(buffer, "{}", instruction_tag) {
+        return Err(error.to_string());
+    }
+
+    write_regular_text(text, buffer)?;
+
+    reset_console_output_to_normal(buffer)?;
+
+    Ok(buffer)
+}
+
 fn write_alert<'a>(text: &str, buffer: &'a mut Buffer) -> Result<&'a mut Buffer, String> {
     reset_console_output_to_normal(buffer)?;
 
@@ -253,6 +277,18 @@ impl DisplayControllerTrait for ConsoleDisplayController {
         let buffer = &mut self.buffer_writer.buffer();
 
         let buffer_writer_result = self.buffer_writer.print(write_alert(text, buffer)?);
+
+        if let Err(error) = buffer_writer_result {
+            return Err(error.to_string());
+        }
+
+        Ok(())
+    }
+
+    fn write_instruction(&self, text: &str) -> std::result::Result<(), std::string::String> {
+        let buffer = &mut self.buffer_writer.buffer();
+
+        let buffer_writer_result = self.buffer_writer.print(write_instruction(text, buffer)?);
 
         if let Err(error) = buffer_writer_result {
             return Err(error.to_string());

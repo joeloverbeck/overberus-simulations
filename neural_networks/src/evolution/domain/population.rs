@@ -13,6 +13,7 @@ pub trait PopulationTrait<T: GenomeTrait<U, V>, U: NeuralNetworkTrait<V>, V: Neu
     fn get_size(&self) -> u32;
     fn add(&mut self, genome: T) -> Result<(), String>;
     fn get_genome(&self, index: usize) -> Result<&T, String>;
+    fn get_genomes(&self) -> Result<&Vec<T>, String>;
     fn get_genomes_mut(&mut self) -> Result<&mut Vec<T>, String>;
     fn get_genome_mut(&mut self, index: usize) -> Result<&mut T, String>;
     fn get_sorted_index(&self) -> Vec<usize>;
@@ -126,6 +127,9 @@ impl<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTr
         &mut self,
     ) -> std::result::Result<&mut std::vec::Vec<T>, std::string::String> {
         Ok(&mut self.genomes)
+    }
+    fn get_genomes(&self) -> std::result::Result<&std::vec::Vec<T>, std::string::String> {
+        Ok(&self.genomes)
     }
 }
 

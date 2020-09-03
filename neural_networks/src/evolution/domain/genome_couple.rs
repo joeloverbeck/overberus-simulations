@@ -26,6 +26,11 @@ impl<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTr
     ) -> Result<GenomeCouple<T, U, V>, String> {
         let sorted_index = population.get_sorted_index();
 
+        // Sanity check
+        if index + 1 >= population.get_size() {
+            panic!("Was going to retrieve the genome at index {:?}, but the size of the population passed to create a couple was {:?}.", index + 1, population.get_size());
+        }
+
         Ok(GenomeCouple {
             first_parent: population.get_genome(sorted_index[index as usize])?,
             second_parent: population.get_genome(sorted_index[(index + 1) as usize])?,

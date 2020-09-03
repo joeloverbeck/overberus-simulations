@@ -44,7 +44,9 @@ fn main() {
 
     let number_of_neural_networks = 50;
 
-    let training_population_path = "data/images_generation/training_population.json";
+    console_display_controller
+        .write_section("Evolution of a new generation")
+        .unwrap();
 
     if does_file_exist("data/images_generation/training_population.json").unwrap() {
         todo!();
@@ -54,14 +56,17 @@ fn main() {
         if let Ok(population) = Population::new_with_specified_layers(
             number_of_neural_networks,
             layers_definition,
-            |layers_definition, randomizer| {
-                Genome::new(NeuralNetwork::new_with_specified_layers(
-                    layers_definition,
-                    randomizer,
-                    |number_of_inputs, randomizer| {
-                        Neuron::new(number_of_inputs, ActivationFunctions::Swish, randomizer)
-                    },
-                ))
+            |genome_identifier, layers_definition, randomizer| {
+                Genome::new(
+                    genome_identifier,
+                    NeuralNetwork::new_with_specified_layers(
+                        layers_definition,
+                        randomizer,
+                        |number_of_inputs, randomizer| {
+                            Neuron::new(number_of_inputs, ActivationFunctions::Swish, randomizer)
+                        },
+                    ),
+                )
             },
             &mut randomizer,
         ) {
@@ -82,12 +87,12 @@ fn main() {
                 )
                 .unwrap();
 
-            for (index, genome) in genomes.iter().enumerate() {
+            for genome in genomes.iter() {
                 let dt = Local::now();
 
                 let filename = format!(
                     "data/images_generation/genome_{}_{}{}{}_{}{}{}.png",
-                    index + 1,
+                    genome.get_identifier(),
                     dt.year(),
                     dt.month(),
                     dt.day(),
@@ -97,7 +102,11 @@ fn main() {
                 );
 
                 save_json(
-                    format!("data/images_generation/genome_{}.json", index + 1).as_str(),
+                    format!(
+                        "data/images_generation/genome_{}.json",
+                        genome.get_identifier()
+                    )
+                    .as_str(),
                     genome,
                 )?;
 
@@ -105,7 +114,7 @@ fn main() {
                     .write_information(
                         format!(
                             "Will write to file the output of genome {} as {}",
-                            index + 1,
+                            genome.get_identifier(),
                             filename
                         )
                         .as_str(),
@@ -128,7 +137,7 @@ fn main() {
 
     let new_population = gym_controller
         .train(
-            |neural_network| Genome::new(neural_network),
+            |genome_identifier, neural_network| Genome::new(genome_identifier, neural_network),
             || NeuralNetwork::new(),
             |number_of_inputs, randomizer| {
                 Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
@@ -152,11 +161,7 @@ fn main() {
         )
         .unwrap();
 
-    save_json(training_population_path, &new_population).unwrap();
-
     console_display_controller
-        .write_information(
-            format!("Trained generation saved as {}", training_population_path).as_str(),
-        )
+        .write_information("The program has finished successfully.")
         .unwrap();
 }

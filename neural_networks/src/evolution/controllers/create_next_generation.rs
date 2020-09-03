@@ -14,7 +14,7 @@ pub fn create_next_generation<
     V: NeuralNetworkTrait<W> + Clone,
     W: NeuronTrait + Clone,
     X: RandomizerTrait,
-    Y: Fn(V) -> T,
+    Y: Fn(u32, V) -> T,
     Z: Fn() -> V,
     A: Fn(u32, &mut X) -> W,
 >(

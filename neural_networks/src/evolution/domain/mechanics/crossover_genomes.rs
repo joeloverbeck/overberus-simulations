@@ -15,7 +15,7 @@ pub fn crossover_genomes<
     U: NeuralNetworkTrait<V> + Clone,
     V: NeuronTrait + Clone,
     W: RandomizerTrait,
-    X: Fn(U) -> T,
+    X: Fn(u32, U) -> T,
     Y: Fn() -> U,
     Z: Fn(u32, &mut W) -> V,
 >(
@@ -50,5 +50,8 @@ pub fn crossover_genomes<
         second_child.add(c2)?;
     }
 
-    Ok((genome_creator(first_child), genome_creator(second_child)))
+    Ok((
+        genome_creator(couple.get_first_parent().get_identifier(), first_child),
+        genome_creator(couple.get_second_parent().get_identifier(), second_child),
+    ))
 }

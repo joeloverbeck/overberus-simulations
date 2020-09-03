@@ -68,7 +68,7 @@ impl<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTr
         }
     }
 
-    pub fn new_with_specified_layers<W: RandomizerTrait, X: Fn(&[[usize; 2]], &mut W) -> T>(
+    pub fn new_with_specified_layers<W: RandomizerTrait, X: Fn(u32, &[[usize; 2]], &mut W) -> T>(
         number_of_neural_networks: u32,
         layers_definition: &[[usize; 2]],
         genome_creator: X,
@@ -76,8 +76,8 @@ impl<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTr
     ) -> Result<Self, String> {
         let mut population = Population::new();
 
-        for _ in 0..number_of_neural_networks {
-            let genome = genome_creator(layers_definition, randomizer);
+        for index in 0..number_of_neural_networks {
+            let genome = genome_creator(index + 1, layers_definition, randomizer);
 
             population.add(genome)?;
         }
@@ -241,14 +241,17 @@ mod tests {
         >::new_with_specified_layers(
             10,
             layers_definition,
-            |layers_definition, randomizer| {
-                Genome::new(NeuralNetwork::new_with_specified_layers(
-                    layers_definition,
-                    randomizer,
-                    |number_of_inputs, randomizer| {
-                        Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
-                    },
-                ))
+            |genome_identifier, layers_definition, randomizer| {
+                Genome::new(
+                    genome_identifier,
+                    NeuralNetwork::new_with_specified_layers(
+                        layers_definition,
+                        randomizer,
+                        |number_of_inputs, randomizer| {
+                            Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
+                        },
+                    ),
+                )
             },
             &mut randomizer,
         )?;
@@ -301,7 +304,7 @@ mod tests {
         neural_network1.add(layer1)?;
         neural_network1.add(layer2)?;
 
-        population.add(Genome::new(neural_network1))?;
+        population.add(Genome::new(1, neural_network1))?;
 
         assert_eq!(population.get_size(), 1);
 
@@ -319,7 +322,7 @@ mod tests {
         neural_network2.add(layer1)?;
         neural_network2.add(layer2)?;
 
-        population.add(Genome::new(neural_network2))?;
+        population.add(Genome::new(2, neural_network2))?;
 
         Ok(population)
     }
@@ -371,7 +374,7 @@ mod tests {
         neural_network.add(layer1)?;
         neural_network.add(layer2)?;
 
-        population.add(Genome::new(neural_network))?;
+        population.add(Genome::new(1, neural_network))?;
 
         population.get_genome_mut(2)?.set_fitness(7.0_f64);
 

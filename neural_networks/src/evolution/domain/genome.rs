@@ -11,21 +11,24 @@ pub trait GenomeTrait<T: NeuralNetworkTrait<U>, U: NeuronTrait> {
     fn get_neural_network_mut(&mut self) -> &mut T;
     fn get_fitness(&self) -> f64;
     fn set_fitness(&mut self, fitness: f64);
+    fn get_identifier(&self) -> u32;
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Genome<T: NeuralNetworkTrait<U>, U: NeuronTrait> {
+    identifier: u32,
     neural_network: T,
     fitness: f64,
     phantom: PhantomData<U>,
 }
 
 impl<T: NeuralNetworkTrait<U>, U: NeuronTrait> Genome<T, U> {
-    pub fn new(neural_network: T) -> Self
+    pub fn new(identifier: u32, neural_network: T) -> Self
     where
         T: NeuralNetworkTrait<U>,
     {
         Genome {
+            identifier,
             neural_network,
             fitness: 0f64,
             phantom: PhantomData,
@@ -58,6 +61,9 @@ impl<T: NeuralNetworkTrait<U>, U: NeuronTrait> GenomeTrait<T, U> for Genome<T, U
     fn get_neural_network_mut(&mut self) -> &mut T {
         &mut self.neural_network
     }
+    fn get_identifier(&self) -> u32 {
+        self.identifier
+    }
 }
 
 #[cfg(test)]
@@ -84,7 +90,7 @@ mod tests {
             },
         );
 
-        let genome = Genome::new(neural_network);
+        let genome = Genome::new(1, neural_network);
 
         assert_eq!(genome.get_neural_network().get_number_of_layers(), 3);
 

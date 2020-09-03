@@ -55,7 +55,7 @@ impl<
     }
 
     pub fn train<
-        Z: Fn(U) -> T,
+        Z: Fn(u32, U) -> T,
         A: Fn() -> U,
         B: Fn(u32, &mut Y) -> V,
         C: Fn(u32, &Population<T, U, V>),
@@ -133,7 +133,7 @@ mod tests {
         let mut randomizer = Randomizer::new();
 
         let trained_population = sut.train(
-            |neural_network| Genome::new(neural_network),
+            |genome_identifier, neural_network| Genome::new(genome_identifier, neural_network),
             || NeuralNetwork::new(),
             |number_of_inputs, randomizer| {
                 Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)

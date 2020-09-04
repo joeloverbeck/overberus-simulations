@@ -1,10 +1,10 @@
 extern crate neural_networks;
 extern crate randomization;
+extern crate rayon;
 extern crate user_interface;
 
-
-use domain::models::images_generator::generate_time_tag_as_string::generate_time_tag_as_string;
 use domain::models::images_generator::generate_png_from_neural_network::generate_png_from_neural_network;
+use domain::models::images_generator::generate_time_tag_as_string::generate_time_tag_as_string;
 
 use self::neural_networks::evolution::domain::genome::GenomeTrait;
 use self::neural_networks::neural_network::NeuralNetworkTrait;
@@ -13,13 +13,13 @@ use self::randomization::randomizer::RandomizerTrait;
 use self::user_interface::controllers::display_controller_trait::DisplayControllerTrait;
 
 pub fn process_generation_of_images_from_neural_networks<
-    T: GenomeTrait<U, V> + Clone,
+    T: GenomeTrait<U, V> + Clone + Sync,
     U: NeuralNetworkTrait<V>,
     V: NeuronTrait,
     W: RandomizerTrait,
     X: DisplayControllerTrait,
 >(
-    genomes: &mut Vec<T>,
+    genomes: &[T],
     randomizer: &mut W,
     display_controller: &X,
 ) -> Result<(), String> {

@@ -37,7 +37,9 @@ pub fn generate_pixels_from_neural_network<
     }
 
     for index in 0..image_width * image_height * 4 {
-        image.push(normalize_to_rgba_range(neural_network_outputs[index as usize].abs()));
+        image.push(normalize_to_rgba_range(
+            neural_network_outputs[index as usize].abs(),
+        ));
     }
 
     Ok(image)

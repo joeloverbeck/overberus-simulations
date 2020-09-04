@@ -1,8 +1,8 @@
 extern crate file_system;
-extern crate neural_networks;
-extern crate user_interface;
 extern crate gym;
+extern crate neural_networks;
 extern crate randomization;
+extern crate user_interface;
 
 use self::randomization::randomizer::Randomizer;
 
@@ -29,7 +29,7 @@ fn main() {
     let console_display_controller = ConsoleDisplayController::new();
     let console_input_controller = ConsoleInputController::new();
 
-    let image_dimension = 1024;
+    let image_dimension = 1440;
 
     console_display_controller.write_information(format!("This program is intended to produce {}x{} images from the genome identifiers passed as arguments.", image_dimension, image_dimension).as_str()).unwrap();
 
@@ -41,9 +41,11 @@ fn main() {
 
     let mut randomizer = Randomizer::new();
 
-    console_display_controller.write_section("Rendering enlarged images").unwrap();
+    console_display_controller
+        .write_section("Rendering enlarged images")
+        .unwrap();
 
-    for argument in env::args().skip(1){
+    for argument in env::args().skip(1) {
         // We should have a genome identifier.
         let possible_genome_identifier = argument.parse::<u32>();
 
@@ -68,7 +70,8 @@ fn main() {
 
         let file_as_string = read_file_to_string(genome_filename.as_str()).unwrap();
 
-        let possible_genome = deserialize_json_from_string::<Genome<NeuralNetwork<Neuron>, Neuron>>(&file_as_string);
+        let possible_genome =
+            deserialize_json_from_string::<Genome<NeuralNetwork<Neuron>, Neuron>>(&file_as_string);
 
         match possible_genome {
             Err(error) => console_display_controller.crash_with_alert(
@@ -79,21 +82,26 @@ fn main() {
                 .as_str(),
             ),
             Ok(genome) => {
+                let genome_filename = format!(
+                    "data/images_generation/enlarged_images/genome_{}_{}.png",
+                    genome_identifier,
+                    generate_time_tag_as_string()
+                );
 
-                let genome_filename = format!("data/images_generation/enlarged_images/genome_{}_{}.png", genome_identifier, generate_time_tag_as_string());
+                console_display_controller
+                    .write_information(
+                        format!(
+                            "Will create the enlarged image for genome {} in '{}'",
+                            genome.get_identifier(),
+                            genome_filename
+                        )
+                        .as_str(),
+                    )
+                    .unwrap();
 
-                console_display_controller.write_information(format!("Will create the enlarged image for genome {} in '{}'", genome.get_identifier(), genome_filename).as_str()).unwrap();
-
-                console_display_controller.write_instruction("Rendering image...").unwrap();
-
-                generate_png_from_neural_network(
-                    256,
-                    256,
-                    genome.get_neural_network(),
-                    genome_filename.as_str(),
-                    &mut randomizer,
-                )
-                .unwrap();
+                console_display_controller
+                    .write_instruction("Rendering image...")
+                    .unwrap();
 
                 generate_png_from_neural_network(
                     image_dimension,
@@ -104,10 +112,16 @@ fn main() {
                 )
                 .unwrap();
 
-                console_display_controller.write_information(format!("Enlarged image rendered for genome {}.", genome.get_identifier()).as_str()).unwrap();
+                console_display_controller
+                    .write_information(
+                        format!(
+                            "Enlarged image rendered for genome {}.",
+                            genome.get_identifier()
+                        )
+                        .as_str(),
+                    )
+                    .unwrap();
             }
         }
-
-        
     }
 }

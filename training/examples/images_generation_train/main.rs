@@ -14,6 +14,7 @@ use gym::domain::models::images_generator::constants::SAVED_GENOMES_DIRECTORY;
 use gym::domain::models::images_generator::establish_training_population::establish_training_population;
 use gym::domain::models::images_generator::process_generation_of_images_from_neural_networks::process_generation_of_images_from_neural_networks;
 use gym::domain::models::images_generator::save_evolved_population::save_evolved_population;
+use neural_networks::neuron_activation::choose_random_activation_function_including::choose_random_activation_function_including;
 use std::process;
 
 use self::user_interface::controllers::console_display_controller::ConsoleDisplayController;
@@ -27,7 +28,6 @@ use neural_networks::neural_network::NeuralNetwork;
 use neural_networks::neural_network::NeuralNetworkTrait;
 use neural_networks::neuron::Neuron;
 use neural_networks::neuron::NeuronTrait;
-use neural_networks::neuron_activation::choose_random_activation_function_except::choose_random_activation_function_except;
 use neural_networks::neuron_activation::activation_functions::ActivationFunctions;
 use randomization::randomizer::Randomizer;
 
@@ -71,7 +71,14 @@ fn main() {
                                 |number_of_inputs, randomizer| {
                                     Neuron::new(
                                         number_of_inputs,
-                                        choose_random_activation_function_except(randomizer, &[ActivationFunctions::Cosine, ActivationFunctions::Sinusoid]),
+                                        choose_random_activation_function_including(
+                                            randomizer,
+                                            &[
+                                                ActivationFunctions::Sigmoid,
+                                                ActivationFunctions::Tanh,
+                                                ActivationFunctions::Swish,
+                                            ],
+                                        ),
                                         randomizer,
                                     )
                                 },
@@ -121,14 +128,16 @@ fn main() {
     let mut gym_controller = GymController::new(
         population,
         |generation_number| if generation_number >= 1 { false } else { true },
-        |genomes, randomizer| {
+        |_genomes, _randomizer| Ok(()),
+        |evolved_population, randomizer| {
             process_generation_of_images_from_neural_networks(
-                genomes,
+                evolved_population.get_genomes().unwrap(),
                 randomizer,
                 &console_display_controller,
             )
+            .unwrap();
+            save_evolved_population(evolved_population)
         },
-        |evolved_population| save_evolved_population(evolved_population),
     );
 
     let new_population = gym_controller
@@ -136,7 +145,18 @@ fn main() {
             |genome_identifier, neural_network| Genome::new(genome_identifier, neural_network),
             || NeuralNetwork::new(),
             |number_of_inputs, randomizer| {
-                Neuron::new(number_of_inputs, choose_random_activation_function_except(randomizer, &[ActivationFunctions::Sinusoid, ActivationFunctions::Cosine]), randomizer)
+                Neuron::new(
+                    number_of_inputs,
+                    choose_random_activation_function_including(
+                        randomizer,
+                        &[
+                            ActivationFunctions::Sigmoid,
+                            ActivationFunctions::Tanh,
+                            ActivationFunctions::Swish,
+                        ],
+                    ),
+                    randomizer,
+                )
             },
             |_generation_number, _population| {
                 console_display_controller

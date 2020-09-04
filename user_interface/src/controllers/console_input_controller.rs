@@ -2,6 +2,12 @@ use controllers::console_input_controller_trait::ConsoleInputControllerTrait;
 
 pub struct ConsoleInputController {}
 
+impl Default for ConsoleInputController {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ConsoleInputController {
     pub fn new() -> ConsoleInputController {
         ConsoleInputController {}

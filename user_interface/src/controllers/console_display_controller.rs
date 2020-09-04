@@ -249,9 +249,7 @@ impl DisplayControllerTrait for ConsoleDisplayController {
     fn write_information(&self, text: &str) -> Result<(), String> {
         let buffer = &mut self.buffer_writer.buffer();
 
-        let buffer_writer_result = self.buffer_writer.print(write_information(text,
-            buffer,
-        )?);
+        let buffer_writer_result = self.buffer_writer.print(write_information(text, buffer)?);
 
         if let Err(error) = buffer_writer_result {
             return Err(error.to_string());

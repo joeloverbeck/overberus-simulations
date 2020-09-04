@@ -22,7 +22,7 @@ pub struct GymController<
     V: NeuronTrait + Clone,
     W: Fn(u32) -> bool,
     X: Fn(&mut Vec<T>, &mut Z) -> Result<(), String>,
-    Y: Fn(&Population<T, U, V>) -> Result<(), String>,
+    Y: Fn(&Population<T, U, V>, &mut Z) -> Result<(), String>,
     Z: RandomizerTrait,
 > {
     population: Population<T, U, V>,
@@ -40,7 +40,7 @@ impl<
         V: NeuronTrait + Clone,
         W: Fn(u32) -> bool,
         X: Fn(&mut Vec<T>, &mut Z) -> Result<(), String>,
-        Y: Fn(&Population<T, U, V>) -> Result<(), String>,
+        Y: Fn(&Population<T, U, V>, &mut Z) -> Result<(), String>,
         Z: RandomizerTrait,
     > GymController<T, U, V, W, X, Y, Z>
 {
@@ -91,7 +91,7 @@ impl<
 
             generation_training_reporter(self.generations, &self.population);
 
-            (self.operation_to_perform_on_evolved_population)(&self.population)?;
+            (self.operation_to_perform_on_evolved_population)(&self.population, randomizer)?;
 
             self.generations += 1;
         }
@@ -141,7 +141,7 @@ mod tests {
                 }
             },
             |_genomes_to_train, _randomizer| -> Result<(), String> { Ok(()) },
-            |_evolved_population| Ok(()),
+            |_evolved_population, _randomizer| Ok(()),
         );
 
         let mut randomizer = Randomizer::new();

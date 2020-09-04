@@ -15,3 +15,4 @@ chrono = "0.4"
 png_encode_mini = "0.1.2"
 close-file = "0.1.0"
 serde = { version = "1.0.115", features = ["derive"] }
+rayon = "1.1"

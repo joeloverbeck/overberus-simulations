@@ -41,7 +41,6 @@ fn main() {
     let possible_fitness_score =
         console_input_controller.parse_console_argument_number_as_type::<f64>(2);
 
-    
     if let Err(error) = possible_genome_identifier.clone() {
         console_display_controller.crash_with_alert(format!("The first argument should be a valid genome identifier (a digit). You passed '{}'. Error: {}", console_input_controller.get_console_argument_number(1), error).as_str());
     }

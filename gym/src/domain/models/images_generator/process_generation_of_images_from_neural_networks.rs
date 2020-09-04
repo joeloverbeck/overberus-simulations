@@ -2,8 +2,8 @@ extern crate neural_networks;
 extern crate randomization;
 extern crate user_interface;
 
-extern crate chrono;
-use self::chrono::prelude::*;
+
+use domain::models::images_generator::generate_time_tag_as_string::generate_time_tag_as_string;
 use domain::models::images_generator::generate_png_from_neural_network::generate_png_from_neural_network;
 
 use self::neural_networks::evolution::domain::genome::GenomeTrait;
@@ -30,17 +30,10 @@ pub fn process_generation_of_images_from_neural_networks<
         .unwrap();
 
     for genome in genomes.iter() {
-        let dt = Local::now();
-
         let filename = format!(
-            "data/images_generation/genome_{}_{}{}{}_{}{}{}.png",
+            "data/images_generation/genome_{}_{}.png",
             genome.get_identifier(),
-            dt.year(),
-            dt.month(),
-            dt.day(),
-            dt.hour(),
-            dt.minute(),
-            dt.second()
+            generate_time_tag_as_string()
         );
 
         display_controller

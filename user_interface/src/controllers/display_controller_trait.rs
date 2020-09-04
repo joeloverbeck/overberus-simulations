@@ -6,4 +6,5 @@ pub trait DisplayControllerTrait {
     fn write_section(&self, text: &str) -> Result<(), String>;
     fn write_alert(&self, text: &str) -> Result<(), String>;
     fn write_instruction(&self, text: &str) -> Result<(), String>;
+    fn crash_with_alert(&self, text: &str);
 }

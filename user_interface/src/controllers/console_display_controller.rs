@@ -121,7 +121,7 @@ fn write_information<'a>(text: &str, buffer: &'a mut Buffer) -> Result<&'a mut B
         return Err(error.to_string());
     }
 
-    if let Err(error) = write!(buffer, "{}", text) {
+    if let Err(error) = write!(buffer, "{}", format!(" {}", text)) {
         return Err(error.to_string());
     }
 
@@ -186,7 +186,7 @@ fn write_regular_text(text: &str, buffer: &mut Buffer) -> Result<(), String> {
         return Err(error.to_string());
     }
 
-    if let Err(error) = write!(buffer, "{}", text) {
+    if let Err(error) = write!(buffer, "{}", format!(" {}", text)) {
         return Err(error.to_string());
     }
 
@@ -249,8 +249,7 @@ impl DisplayControllerTrait for ConsoleDisplayController {
     fn write_information(&self, text: &str) -> Result<(), String> {
         let buffer = &mut self.buffer_writer.buffer();
 
-        let buffer_writer_result = self.buffer_writer.print(write_information(
-            &(" ".to_string() + &text.to_string()),
+        let buffer_writer_result = self.buffer_writer.print(write_information(text,
             buffer,
         )?);
 
@@ -295,5 +294,10 @@ impl DisplayControllerTrait for ConsoleDisplayController {
         }
 
         Ok(())
+    }
+
+    fn crash_with_alert(&self, text: &str) {
+        self.write_alert(text).unwrap();
+        std::process::exit(0);
     }
 }

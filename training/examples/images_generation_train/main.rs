@@ -27,6 +27,7 @@ use neural_networks::neural_network::NeuralNetwork;
 use neural_networks::neural_network::NeuralNetworkTrait;
 use neural_networks::neuron::Neuron;
 use neural_networks::neuron::NeuronTrait;
+use neural_networks::neuron_activation::choose_random_activation_function_except::choose_random_activation_function_except;
 use neural_networks::neuron_activation::activation_functions::ActivationFunctions;
 use randomization::randomizer::Randomizer;
 
@@ -70,7 +71,7 @@ fn main() {
                                 |number_of_inputs, randomizer| {
                                     Neuron::new(
                                         number_of_inputs,
-                                        ActivationFunctions::Swish,
+                                        choose_random_activation_function_except(randomizer, &[ActivationFunctions::Cosine, ActivationFunctions::Sinusoid]),
                                         randomizer,
                                     )
                                 },
@@ -135,7 +136,7 @@ fn main() {
             |genome_identifier, neural_network| Genome::new(genome_identifier, neural_network),
             || NeuralNetwork::new(),
             |number_of_inputs, randomizer| {
-                Neuron::new(number_of_inputs, ActivationFunctions::Swish, randomizer)
+                Neuron::new(number_of_inputs, choose_random_activation_function_except(randomizer, &[ActivationFunctions::Sinusoid, ActivationFunctions::Cosine]), randomizer)
             },
             |_generation_number, _population| {
                 console_display_controller

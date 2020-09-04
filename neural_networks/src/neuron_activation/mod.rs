@@ -8,3 +8,4 @@ pub mod sinusoid;
 pub mod softplus;
 pub mod swish;
 pub mod tanh;
+pub mod choose_random_activation_function_except;

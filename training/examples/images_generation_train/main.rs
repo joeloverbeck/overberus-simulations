@@ -6,21 +6,25 @@ extern crate neural_networks;
 extern crate randomization;
 extern crate user_interface;
 
-use gym::domain::models::images_generator::create_new_population::create_new_population;
+use file_system::get_filenames_from_directory_that_end_with_extension::get_filenames_from_directory_that_end_with_extension;
+use file_system::read_file_to_string::read_file_to_string;
+use gym::domain::models::images_generator::constants::LAYERS_DEFINITION;
+use gym::domain::models::images_generator::constants::NUMBER_OF_NEURAL_NETWORKS;
+use gym::domain::models::images_generator::constants::SAVED_GENOMES_DIRECTORY;
+use gym::domain::models::images_generator::establish_training_population::establish_training_population;
 use gym::domain::models::images_generator::process_generation_of_images_from_neural_networks::process_generation_of_images_from_neural_networks;
 use gym::domain::models::images_generator::save_evolved_population::save_evolved_population;
 use std::process;
 
 use self::user_interface::controllers::console_display_controller::ConsoleDisplayController;
 use self::user_interface::controllers::display_controller_trait::DisplayControllerTrait;
-use file_system::are_there_filenames_with_extension_in_directory::are_there_filenames_with_extension_in_directory;
 use file_system::create_all_directories_on_path::create_all_directories_on_path;
 use gym::controllers::gym_controller::GymController;
-use gym::domain::models::images_generator::create_population_with_stored_genomes::create_population_with_stored_genomes;
 use neural_networks::evolution::domain::genome::Genome;
 use neural_networks::evolution::domain::population::Population;
 use neural_networks::evolution::domain::population::PopulationTrait;
 use neural_networks::neural_network::NeuralNetwork;
+use neural_networks::neural_network::NeuralNetworkTrait;
 use neural_networks::neuron::Neuron;
 use neural_networks::neuron::NeuronTrait;
 use neural_networks::neuron_activation::activation_functions::ActivationFunctions;
@@ -33,13 +37,7 @@ fn main() {
         .write_announcement("Train a generation of images generators")
         .unwrap();
 
-    let saved_genomes_directory = "./data/images_generation/";
-
-    console_display_controller.write_information(format!("This program will attempt to load a saved population of images generators (genomes) located in '{}'. Otherwise, the program will start a new training session.", saved_genomes_directory).as_str()).unwrap();
-
-    let training_population: Option<
-        Population<Genome<NeuralNetwork<Neuron>, Neuron>, NeuralNetwork<Neuron>, Neuron>,
-    >;
+    console_display_controller.write_information(format!("This program will attempt to load a saved population of images generators (genomes) located in '{}'. Otherwise, the program will start a new training session.", SAVED_GENOMES_DIRECTORY).as_str()).unwrap();
 
     let mut randomizer = Randomizer::new();
 
@@ -47,19 +45,51 @@ fn main() {
         .write_section("Evolution of a new generation")
         .unwrap();
 
-    create_all_directories_on_path(saved_genomes_directory).unwrap();
+    create_all_directories_on_path(SAVED_GENOMES_DIRECTORY).unwrap();
 
-    if are_there_filenames_with_extension_in_directory(saved_genomes_directory, "json").unwrap() {
-        match create_population_with_stored_genomes(
-            saved_genomes_directory,
+    let saved_genomes_as_strings: Vec<String> = {
+        get_filenames_from_directory_that_end_with_extension(SAVED_GENOMES_DIRECTORY, "json")
+            .iter()
+            .map(|stored_genome| read_file_to_string(stored_genome).unwrap())
+            .collect()
+    };
+
+    let population = {
+        match establish_training_population(
+            || Population::new(),
+            |randomizer| {
+                Population::new_with_specified_layers(
+                    NUMBER_OF_NEURAL_NETWORKS,
+                    LAYERS_DEFINITION,
+                    |genome_identifier, layers_definition, randomizer| {
+                        Genome::new(
+                            genome_identifier,
+                            NeuralNetwork::new_with_specified_layers(
+                                layers_definition,
+                                randomizer,
+                                |number_of_inputs, randomizer| {
+                                    Neuron::new(
+                                        number_of_inputs,
+                                        ActivationFunctions::Swish,
+                                        randomizer,
+                                    )
+                                },
+                            ),
+                        )
+                    },
+                    randomizer,
+                )
+            },
             &console_display_controller,
+            &saved_genomes_as_strings,
+            &mut randomizer,
         ) {
-            Ok(population) => training_population = population,
+            Ok(possible_population) => possible_population.unwrap(),
             Err(error) => {
                 console_display_controller
                     .write_alert(
                         format!(
-                            "Failed while creating a population with the stored genomes. Error: {}",
+                            "Failed to establish a training population. Error: {}",
                             error
                         )
                         .as_str(),
@@ -68,19 +98,7 @@ fn main() {
                 process::exit(0);
             }
         }
-    } else {
-        console_display_controller.write_information("Couldn't find a previous training population. Starting a training session from scratch...").unwrap();
-
-        match create_new_population(&mut randomizer) {
-            Ok(population) => training_population = population,
-            Err(error) => {
-                console_display_controller.write_alert(format!("Failed while creating a new population to start from scratch. Error: {}", error).as_str()).unwrap();
-                process::exit(0);
-            }
-        }
-    }
-
-    let population = training_population.unwrap();
+    };
 
     // If at this point there are no genomes in the population, leave.
     if population.get_size() == 0 {
@@ -94,7 +112,7 @@ fn main() {
     }
 
     // Clean the directory of every previous png and saved genome.
-    if let Err(error) = clean_directory_of_previous_images_and_genomes::clean_directory_of_previous_images_and_genomes(saved_genomes_directory) {
+    if let Err(error) = clean_directory_of_previous_images_and_genomes::clean_directory_of_previous_images_and_genomes(SAVED_GENOMES_DIRECTORY) {
         console_display_controller.write_alert(format!("Failed while cleaning the working directory of every previous png and saved genome. Error: {}", error).as_str()).unwrap();
         process::exit(0);
     }

@@ -7,4 +7,5 @@ members = [
     "file_system",
     "text_manipulation",
     "gym",
+    "cosmopolitan_collapse",
 ]

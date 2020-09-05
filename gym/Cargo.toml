@@ -11,6 +11,7 @@ randomization = { path = "../randomization" }
 file_system = { path = "../file_system" }
 geometry = { path = "../geometry" }
 user_interface = { path = "../user_interface" }
+cosmopolitan_collapse = { path = "../cosmopolitan_collapse" }
 chrono = "0.4"
 png_encode_mini = "0.1.2"
 close-file = "0.1.0"

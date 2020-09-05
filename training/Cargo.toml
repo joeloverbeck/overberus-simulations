@@ -8,6 +8,7 @@ authors = ["Joel Overbeck"]
 neural_networks = { path = "../neural_networks" }
 randomization = { path = "../randomization" }
 user_interface = { path = "../user_interface" }
+cosmopolitan_collapse = { path = "../cosmopolitan_collapse" }
 gym = { path = "../gym" }
 file_system = { path = "../file_system" }
 png_encode_mini = "0.1.2"

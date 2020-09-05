@@ -30,6 +30,7 @@ pub struct GymController<
     continue_condition: W,
     train_genomes: X,
     operation_to_perform_on_evolved_population: Y,
+    winner: Option<T>,
     phantom_y: PhantomData<Y>,
     phantom_z: PhantomData<Z>,
 }
@@ -56,6 +57,7 @@ impl<
             continue_condition,
             train_genomes,
             operation_to_perform_on_evolved_population,
+            winner: None,
             phantom_y: PhantomData,
             phantom_z: PhantomData,
         }
@@ -76,6 +78,20 @@ impl<
     ) -> Result<Population<T, U, V>, String> {
         while (self.continue_condition)(self.generations) {
             (self.train_genomes)(self.population.get_genomes_mut()?, randomizer)?;
+
+            // Store winner.
+            self.winner = Some(
+                self.population
+                    .get_genomes()?
+                    .iter()
+                    .max_by(|a, b| {
+                        a.get_fitness()
+                            .partial_cmp(&b.get_fitness())
+                            .unwrap_or(std::cmp::Ordering::Equal)
+                    })
+                    .unwrap()
+                    .clone(),
+            );
 
             let population_size_before_evolving = self.population.get_size();
 
@@ -101,6 +117,10 @@ impl<
 
     pub fn get_generations(&self) -> u32 {
         self.generations
+    }
+
+    pub fn get_winner(&self) -> &T {
+        &self.winner.as_ref().unwrap()
     }
 }
 

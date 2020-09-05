@@ -1,6 +1,6 @@
 [package]
 name = "neural_networks" # the name of the package
-version = "0.1.0"    # the current version, obeying semver
+version = "0.2.0"    # the current version, obeying semver
 authors = ["Joel Overbeck"]
 
 [dependencies]

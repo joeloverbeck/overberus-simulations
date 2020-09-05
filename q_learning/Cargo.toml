@@ -1,8 +1,0 @@
-[package]
-name = "q_learning" # the name of the package
-version = "0.1.0"    # the current version, obeying semver
-authors = ["Joel Overbeck"]
-
-
-[dependencies]
-itertools = "0.9.0"

@@ -2,7 +2,6 @@
 
 members = [
     "neural_networks",
-    "q_learning",
     "randomization",
     "training",
     "file_system",

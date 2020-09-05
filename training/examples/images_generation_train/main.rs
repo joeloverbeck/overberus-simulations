@@ -160,7 +160,7 @@ fn main() {
             },
             |_generation_number, _population| {
                 console_display_controller
-                    .write_information("Finished.")
+                    .write_information("Training population created.")
                     .unwrap()
             },
             &mut randomizer,
@@ -170,7 +170,7 @@ fn main() {
     console_display_controller
         .write_announcement(
             format!(
-                "Next generation produced, with {} genomes",
+                "Saved to files the population of {} genomes",
                 new_population.get_size()
             )
             .as_str(),
@@ -178,7 +178,7 @@ fn main() {
         .unwrap();
 
     console_display_controller
-        .write_instruction("Look over the generated images, and of those you like you should open their corresponding json file and edit the fitness (at the end of the file) to a higher float than 0.0.")
+        .write_instruction("Look over the generated images. If you intend to train a next generation, you should use the program 'images_generation_rate' to assign fitness scores to the genomes you prefer (don't need to rate all of them).")
         .unwrap();
 
     console_display_controller

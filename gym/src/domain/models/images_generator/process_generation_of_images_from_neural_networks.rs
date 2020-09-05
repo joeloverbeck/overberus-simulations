@@ -25,7 +25,7 @@ pub fn process_generation_of_images_from_neural_networks<
 ) -> Result<(), String> {
     display_controller
         .write_information(
-            format!("Will create pngs from {:?} neural networks.", genomes.len()).as_str(),
+            format!("Will render PNGs from {:?} neural networks.", genomes.len()).as_str(),
         )
         .unwrap();
 

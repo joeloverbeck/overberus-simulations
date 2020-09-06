@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Coordinate {
     x: i32,
     y: i32,

@@ -2,4 +2,5 @@
 pub enum Decisions {
     None,
     Flee,
+    SettleInNaturalShelter,
 }

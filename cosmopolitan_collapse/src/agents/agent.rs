@@ -6,14 +6,18 @@ use queries::context_information::ContextInformation;
 use world::coordinate::Coordinate;
 
 pub struct Agent<T: BrainTrait> {
+    id: u32,
     brain: T,
+    coordinate: Coordinate,
     beliefs: Vec<Belief>,
 }
 
 impl<T: BrainTrait> AgentTrait<T> for Agent<T> {
-    fn new(brain: T) -> Self {
+    fn new(id: u32, brain: T, coordinate: Coordinate) -> Self {
         Agent {
+            id,
             brain,
+            coordinate,
             beliefs: Vec::new(),
         }
     }
@@ -29,6 +33,13 @@ impl<T: BrainTrait> AgentTrait<T> for Agent<T> {
 
     fn decide(&self, context_information: ContextInformation) -> Decisions {
         self.brain.decide(context_information)
+    }
+
+    fn get_coordinate(&self) -> &Coordinate {
+        &self.coordinate
+    }
+    fn get_id(&self) -> u32 {
+        self.id
     }
 }
 
@@ -50,7 +61,7 @@ mod tests {
 
     #[test]
     fn test_an_agent_can_have_beliefs() -> Result<(), String> {
-        let mut agent = Agent::new(FakeBrain {});
+        let mut agent = Agent::new(1, FakeBrain {}, Coordinate::new(0, -3, 3));
 
         agent.add_belief(Belief::new(Coordinate::new(0, -3, 3), Aspects::River));
 
@@ -68,7 +79,7 @@ mod tests {
     #[test]
     fn test_if_requesting_beliefs_about_a_place_all_beliefs_should_be_of_that_place(
     ) -> Result<(), String> {
-        let mut agent = Agent::new(FakeBrain {});
+        let mut agent = Agent::new(1, FakeBrain {}, Coordinate::new(0, -3, 3));
 
         agent.add_belief(Belief::new(Coordinate::new(0, -3, 3), Aspects::River));
         agent.add_belief(Belief::new(Coordinate::new(-1, 1, 2), Aspects::River));
@@ -86,11 +97,20 @@ mod tests {
 
     #[test]
     fn test_can_ask_an_agent_to_make_a_decision() -> Result<(), String> {
-        let agent = Agent::new(FakeBrain {});
+        let agent = Agent::new(1, FakeBrain {}, Coordinate::new(0, -3, 3));
 
         let decision = agent.decide(ContextInformation::new());
 
         assert_eq!(decision, Decisions::None);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_agent_is_in_a_space() -> Result<(), String> {
+        let agent = Agent::new(1, FakeBrain {}, Coordinate::new(0, -3, 3));
+
+        assert_eq!(agent.get_coordinate(), &Coordinate::new(0, -3, 3));
 
         Ok(())
     }

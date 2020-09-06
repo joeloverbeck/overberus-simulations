@@ -5,7 +5,8 @@ extern crate randomization;
 #[cfg(test)]
 mod tests {
 
-    use domain::models::cosmopolitan_collapse::threat_response::cosmopolitan_collapse::agents::decisions::Decisions;
+    use domain::models::cosmopolitan_collapse::threat_response::cosmopolitan_collapse::world::coordinate::Coordinate;
+use domain::models::cosmopolitan_collapse::threat_response::cosmopolitan_collapse::agents::decisions::Decisions;
 use domain::models::cosmopolitan_collapse::threat_response::cosmopolitan_collapse::queries::context_information::ContextInformation;
 use domain::models::cosmopolitan_collapse::threat_response::cosmopolitan_collapse::agents::brain_trait::BrainTrait;
 use domain::models::cosmopolitan_collapse::threat_response::cosmopolitan_collapse::agents::agent::Agent;
@@ -100,7 +101,7 @@ use domain::models::cosmopolitan_collapse::threat_response::cosmopolitan_collaps
             for genome in genomes.iter_mut() {
                 let testing_brain = TestingBrain::new(genome.get_neural_network());
 
-                let agent = Agent::new(testing_brain);
+                let agent = Agent::new(1, testing_brain, Coordinate::new(0, 0, 0));
 
                 let context_information = ContextInformation::new();
 

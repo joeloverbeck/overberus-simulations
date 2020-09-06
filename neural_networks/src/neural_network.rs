@@ -8,10 +8,10 @@ use layer::LayerTrait;
 use neuron::NeuronTrait;
 
 pub trait NeuralNetworkTrait<T: NeuronTrait> {
-    fn new_with_specified_layers<U: RandomizerTrait>(
+    fn new_with_specified_layers<U: RandomizerTrait, V: Fn(u32, &mut U) -> T>(
         layers_definition: &[[usize; 2]],
         randomizer: &mut U,
-        neuron_creator: fn(u32, &mut U) -> T,
+        neuron_creator: V,
     ) -> Self;
     fn get_number_of_layers(&self) -> u32;
     fn get_layer(&self, index: usize) -> &Layer<T>;
@@ -39,10 +39,10 @@ impl<T: NeuronTrait> Default for NeuralNetwork<T> {
 }
 
 impl<T: NeuronTrait> NeuralNetworkTrait<T> for NeuralNetwork<T> {
-    fn new_with_specified_layers<U: RandomizerTrait>(
+    fn new_with_specified_layers<U: RandomizerTrait, V: Fn(u32, &mut U) -> T>(
         layers_definition: &[[usize; 2]],
         randomizer: &mut U,
-        neuron_creator: fn(u32, &mut U) -> T,
+        neuron_creator: V,
     ) -> Self {
         let mut neural_network = NeuralNetwork::new();
 
@@ -51,7 +51,7 @@ impl<T: NeuronTrait> NeuralNetworkTrait<T> for NeuralNetwork<T> {
                 layer[0] as u32,
                 layer[1] as u32,
                 randomizer,
-                neuron_creator,
+                &neuron_creator,
             )) {
                 panic!("Failed to add a layer to Neural Network: {:?}", error);
             }

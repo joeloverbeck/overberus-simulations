@@ -1,1 +1,0 @@
-pub mod is_agent_associated_with_space_aspect;

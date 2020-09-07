@@ -108,7 +108,6 @@ use domain::models::cosmopolitan_collapse::threat_response::cosmopolitan_collaps
                 let decision = agent.decide(context_information);
 
                 if decision == Decisions::Flee {
-                    println!("Genome {} chose to flee!", genome.get_identifier());
                     genome.set_fitness(10.0);
                 }
             }

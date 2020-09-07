@@ -16,7 +16,6 @@ pub trait PopulationTrait<T: GenomeTrait<U, V>, U: NeuralNetworkTrait<V>, V: Neu
     fn get_genomes(&self) -> Result<&Vec<T>, String>;
     fn get_genomes_mut(&mut self) -> Result<&mut Vec<T>, String>;
     fn get_genome_mut(&mut self, index: usize) -> Result<&mut T, String>;
-    fn get_sorted_index(&self) -> Vec<usize>;
     fn get_midpoint(&self) -> u32;
 }
 
@@ -105,21 +104,7 @@ impl<T: GenomeTrait<U, V> + Clone, U: NeuralNetworkTrait<V> + Clone, V: NeuronTr
     fn get_genome_mut(&mut self, index: usize) -> Result<&mut T, String> {
         Ok(&mut self.genomes[index])
     }
-    fn get_sorted_index(&self) -> std::vec::Vec<usize> {
-        let mut index: Vec<(usize, f64)> = self
-            .genomes
-            .iter()
-            .enumerate()
-            .map(|(index, genome)| (index, genome.get_fitness()))
-            .collect();
 
-        index.sort_by(|(_, fitness_a), (_, fitness_b)| {
-            fitness_b
-                .partial_cmp(fitness_a)
-                .unwrap_or(std::cmp::Ordering::Equal)
-        });
-        index.iter().map(|(index, _)| *index).collect()
-    }
     fn get_midpoint(&self) -> u32 {
         self.get_size() % 2 + self.get_size() / 2
     }
@@ -341,60 +326,13 @@ mod tests {
     }
 
     #[test]
-    fn test_can_get_the_sorted_indexes_of_the_population() -> Result<(), String> {
-        let mut population = setup_manual_population()?;
-
-        population.get_genome_mut(0)?.set_fitness(5.0_f64);
-        population.get_genome_mut(1)?.set_fitness(10.0_f64);
-
-        let sorted_indexes = population.get_sorted_index();
-
-        assert_eq!(sorted_indexes, vec![1, 0]);
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_after_adding_genomes_to_population_on_the_fly_getting_sorted_index_returns_the_proper_one(
-    ) -> Result<(), String> {
-        let mut population = setup_manual_population()?;
-
-        population.get_genome_mut(0)?.set_fitness(5.0_f64);
-        population.get_genome_mut(1)?.set_fitness(10.0_f64);
-
-        let mut neural_network = NeuralNetwork::new();
-
-        let mut randomizer = Randomizer::new();
-
-        let layer1 =
-            Layer::<Neuron>::create_layer(3, 2, &mut randomizer, |number_of_inputs, randomizer| {
-                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
-            });
-        let layer2 =
-            Layer::<Neuron>::create_layer(2, 1, &mut randomizer, |number_of_inputs, randomizer| {
-                Neuron::new(number_of_inputs, ActivationFunctions::Sigmoid, randomizer)
-            });
-
-        neural_network.add(layer1)?;
-        neural_network.add(layer2)?;
-
-        population.add(Genome::new(1, neural_network))?;
-
-        population.get_genome_mut(2)?.set_fitness(7.0_f64);
-
-        let sorted_indexes = population.get_sorted_index();
-
-        assert_eq!(sorted_indexes, vec![1, 2, 0]);
-
-        Ok(())
-    }
-
-    #[test]
     fn test_can_create_next_generation_from_existing_population() -> Result<(), String> {
         let mut population = setup_manual_population()?;
 
-        population.get_genome_mut(0)?.set_fitness(5.0_f64);
-        population.get_genome_mut(1)?.set_fitness(10.0_f64);
+        // Note that create_next_generation expects the population to have been ordered.
+
+        population.get_genome_mut(0)?.set_fitness(10.0_f64);
+        population.get_genome_mut(1)?.set_fitness(5.0_f64);
 
         let mut randomizer = Randomizer::new();
 

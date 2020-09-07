@@ -1,6 +1,8 @@
+extern crate float_ord;
 extern crate neural_networks;
 extern crate randomization;
 
+use self::float_ord::FloatOrd;
 use self::neural_networks::evolution::domain::population::Population;
 use self::neural_networks::evolution::domain::population::PopulationTrait;
 use controllers::gym_controller::neural_networks::evolution::controllers::create_next_generation::create_next_generation;
@@ -79,21 +81,24 @@ impl<
         while (self.continue_condition)(self.generations) {
             (self.train_genomes)(self.population.get_genomes_mut()?, randomizer)?;
 
-            // Store winner.
-            self.winner = Some(
-                self.population
-                    .get_genomes()?
-                    .iter()
-                    .max_by(|a, b| {
-                        a.get_fitness()
-                            .partial_cmp(&b.get_fitness())
-                            .unwrap_or(std::cmp::Ordering::Equal)
-                    })
-                    .unwrap()
-                    .clone(),
-            );
-
             let population_size_before_evolving = self.population.get_size();
+
+            // Sort population by fitness.
+            self.population
+                .get_genomes_mut()?
+                .sort_by(|a, b| FloatOrd(b.get_fitness()).cmp(&FloatOrd(a.get_fitness())));
+
+            // Store winner.
+            self.winner = Some(self.population.get_genomes()?[0].clone());
+
+            if self
+                .population
+                .get_genomes()?
+                .iter()
+                .any(|genome| genome.get_fitness() > self.winner.as_ref().unwrap().get_fitness())
+            {
+                panic!("Had stored the winner amongst the generation of genomes, but there was at least another genome in the population with a higher fitness!");
+            }
 
             self.population = create_next_generation(
                 &self.population,

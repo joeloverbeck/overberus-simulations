@@ -2,6 +2,7 @@ extern crate randomization;
 use self::randomization::randomizer::RandomizerTrait;
 use evolution::domain::genome::GenomeTrait;
 use evolution::domain::genome_couple::GenomeCouple;
+use evolution::domain::is_population_ordered_by_fitness::is_population_ordered_by_fitness;
 use evolution::domain::mechanics::crossover_genomes::crossover_genomes;
 use evolution::domain::mechanics::mutate_genome::mutate_genome;
 use evolution::domain::population::Population;
@@ -24,11 +25,20 @@ pub fn create_next_generation<
     neuron_creator: A,
     randomizer: &mut X,
 ) -> Result<Population<T, V, W>, String> {
+    // Note: for the crossing over to make sense, it should be sorted in descending order of fitness. Otherwise
+    // you are just crossing over the genomes it comes across first, and discards the rest.
+    if !is_population_ordered_by_fitness(&population)? {
+        panic!("Was going to create the next generation, but the population wasn't ordered by fitness.!");
+    }
+
     let mut next_generation = Population::new();
 
     for index in 0..population.get_midpoint() {
         let (mut first_child, mut second_child) = crossover_genomes(
-            GenomeCouple::new(index, population)?,
+            GenomeCouple::new(
+                &population.get_genomes()?[index as usize],
+                &population.get_genomes()?[(index as usize) + 1],
+            )?,
             &genome_creator,
             &neural_network_creator,
             &neuron_creator,

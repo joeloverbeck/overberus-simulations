@@ -41,7 +41,6 @@ impl SpaceTrait for Space {
         }
 
         for association in corresponding_associations.iter_mut() {
-            println!("Found association: {:?}", association);
             if !association.is_agent_associated(agent_id) {
                 association.associate_agent(agent_id);
                 return;

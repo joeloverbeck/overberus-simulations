@@ -15,6 +15,11 @@ pub enum Components {
         inhabitants: Vec<u32>,
         room_limit: usize,
     },
+    Campament {
+        inhabitants: Vec<u32>,
+        room_limit: usize,
+    },
+    Name(String),
     FakeBrain,
     Beliefs(Vec<Belief>),
 }

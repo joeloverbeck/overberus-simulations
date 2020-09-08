@@ -229,4 +229,56 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_can_add_a_campament_for_a_space_entity() -> Result<(), String> {
+        let mut components_controller = ComponentsController::new();
+
+        let mut id_generator = IdGenerator::new();
+
+        let space_id = id_generator.generate();
+
+        components_controller.add(space_id, Components::Coordinate { x: 0, y: -3, z: 2 })?;
+        components_controller.add(
+            space_id,
+            Components::Campament {
+                inhabitants: Vec::new(),
+                room_limit: 1,
+            },
+        )?;
+
+        assert_eq!(
+            components_controller
+                .does_any_component_of_an_entity_check_a_condition(space_id, |component| component
+                    .is_campament()),
+            true
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_can_add_name_to_entity() -> Result<(), String> {
+        let mut components_controller = ComponentsController::new();
+
+        let mut id_generator = IdGenerator::new();
+
+        let entity_id = id_generator.generate();
+
+        components_controller.add(
+            entity_id,
+            Components::Name("Humongous Cockslapio".to_string()),
+        )?;
+
+        let matching_name = components_controller
+            .get_component_of_entity(entity_id, |owned_component| owned_component.is_name())?;
+
+        if let Components::Name(name) = matching_name {
+            assert_eq!(name, &"Humongous Cockslapio".to_string());
+        } else {
+            assert!(false);
+        }
+
+        Ok(())
+    }
 }

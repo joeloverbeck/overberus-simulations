@@ -1,5 +1,6 @@
 use components::controllers::components_controller::ComponentsController;
 use components::domain::components::Components;
+use components::domain::manipulate_component::manipulate_component;
 
 pub fn persist_settle_in_cave_decision(
     agent_id: u32,
@@ -20,23 +21,24 @@ pub fn persist_settle_in_cave_decision(
     }
 
     components_controller.manipulate_component(|id, components| *id == space_id && components.iter().any(|component| component.is_cave()), |_id, components| {
-        let mut matching_components = components.iter_mut().filter(|component| component.is_cave()).collect::<Vec<&mut Components>>();
 
-        if let Components::Cave {
-            ref mut inhabitants,
-            ref room_limit,
-        } = matching_components[0]
-        {
-            if inhabitants.len() >= *room_limit {
-                panic!("During the decision to persist settling in a cave, turns out that the room limit {:?} wouldn't allowed due to {:?} inhabitants already present.", room_limit, inhabitants.len());
+        manipulate_component(components, |component| component.is_cave(), |component| {
+            if let Components::Cave {
+                ref mut inhabitants,
+                ref room_limit,
+            } = component
+            {
+                if inhabitants.len() >= *room_limit {
+                    panic!("During the decision to persist settling in a cave, turns out that the room limit {:?} wouldn't allowed due to {:?} inhabitants already present.", room_limit, inhabitants.len());
+                }
+                if inhabitants.iter().any(|inhabitant| inhabitant == &agent_id) {
+                    panic!("During the decision to persist settling in a cave, turns out that the agent was already living in that cave: {:?}", inhabitants);
+                }
+                inhabitants.push(agent_id);
             }
+        }).unwrap();
 
-            if inhabitants.iter().any(|inhabitant| inhabitant == &agent_id) {
-                panic!("During the decision to persist settling in a cave, turns out that the agent was already living in that cave: {:?}", inhabitants);
-            }
-
-            inhabitants.push(agent_id);
-        }})?;
+    })?;
 
     Ok(())
 }

@@ -1,5 +1,6 @@
 use agents::decisions::Decisions;
 use components::controllers::components_controller::ComponentsController;
+use persistence::domain::persist_settle_in_building_decision::persist_settle_in_building_decision;
 use persistence::domain::persist_settle_in_cave_decision::persist_settle_in_cave_decision;
 
 pub struct MemoryPersistenceController {}
@@ -25,6 +26,10 @@ impl MemoryPersistenceController {
         decisions.iter().for_each(|decision| match decision {
             Decisions::SettleInCave { agent_id, space_id } => {
                 persist_settle_in_cave_decision(*agent_id, *space_id, components_controller)
+                    .unwrap()
+            }
+            Decisions::SettleInBuilding { agent_id, space_id } => {
+                persist_settle_in_building_decision(*agent_id, *space_id, components_controller)
                     .unwrap()
             }
             _ => panic!(

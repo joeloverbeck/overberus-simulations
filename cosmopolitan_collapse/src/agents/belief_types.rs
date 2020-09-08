@@ -1,5 +1,4 @@
-
 #[derive(Debug, Clone)]
-pub enum BeliefTypes{
+pub enum BeliefTypes {
     ThereIsARiver,
 }

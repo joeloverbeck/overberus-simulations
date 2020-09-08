@@ -60,6 +60,28 @@ impl ComponentsController {
 
         Ok(())
     }
+
+    pub fn get_entity_id_matching_condition<T: Fn(&Vec<Components>) -> bool>(
+        &self,
+        condition: T,
+    ) -> Result<u32, String> {
+        let matching_ids = self
+            .components
+            .iter()
+            .filter(|(_, components)| condition(components))
+            .map(|(id, _)| id)
+            .collect::<Vec<&u32>>();
+
+        if matching_ids.is_empty() {
+            panic!("Attempted to get the entity id matching a condition, but there was none!");
+        }
+
+        if matching_ids.len() > 1 {
+            panic!("Attempted to get the entity id matching a condition, but there was more than one! Matching: {:?}", matching_ids);
+        }
+
+        Ok(**matching_ids.first().unwrap())
+    }
 }
 
 impl Default for ComponentsController {
@@ -141,5 +163,43 @@ mod tests {
         {
             panic!("There were two components matching. Error: {:?}", error);
         }
+    }
+
+    #[test]
+    fn test_can_add_a_cave_component_for_a_space_entity() -> Result<(), String> {
+        let mut components_controller = ComponentsController::new();
+
+        let mut id_generator = IdGenerator::new();
+
+        let space_id = id_generator.generate();
+        let agent_id = id_generator.generate();
+
+        components_controller.add(space_id, Components::Coordinate { x: 0, y: -3, z: 2 })?;
+        components_controller.add(agent_id, Components::Coordinate { x: 0, y: -3, z: 2 })?;
+
+        components_controller.add(
+            space_id,
+            Components::Cave {
+                inhabitants: Vec::new(),
+                room_limit: 1,
+            },
+        )?;
+
+        let matching_space_id =
+            components_controller.get_entity_id_matching_condition(|components| {
+                components.iter().any(|component| match component {
+                    Components::Coordinate { x: 0, y: -3, z: 2 } => true,
+                    _ => false,
+                }) && components.iter().any(|component| component.is_cave())
+            })?;
+
+        let matching_cave = components_controller
+            .get_component_of_entity(matching_space_id, |owned_component| {
+                owned_component.is_cave()
+            })?;
+
+        assert!(matching_cave.is_cave());
+
+        Ok(())
     }
 }

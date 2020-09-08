@@ -24,33 +24,15 @@ impl ComponentsController {
 
     fn crash_if_there_are_more_than_one_match_for_condition(
         &self,
-        matched_components: &Vec<&Components>,
+        matched_components: &[&Components],
     ) {
         if matched_components.len() > 1 {
             panic!("Attempted to retrieve a component of an entity, but it had more than one component matching the passed condition. Retrieved: {:?}", matched_components);
         }
     }
 
-    pub fn get_mut_component_of_entity<T: Fn(&&mut Components) -> bool>(
-        &mut self,
-        entity_id: u32,
-        condition: T,
-    ) -> Result<&mut Components, String> {
-        self.crash_if_there_are_no_components_for_entity(entity_id);
-
-        let matched_components: Vec<&mut Components> = self
-            .components
-            .get_mut(&entity_id)
-            .unwrap()
-            .iter_mut()
-            .filter(condition)
-            .collect();
-
-        if matched_components.len() > 1 {
-            panic!("Attempted to retrieve a component of an entity, but it had more than one component matching the passed condition. Retrieved: {:?}", matched_components);
-        }
-
-        Ok(*matched_components.first().unwrap())
+    pub fn get_mut_components(&mut self) -> &mut HashMap<u32, Vec<Components>> {
+        &mut self.components
     }
 
     pub fn get_component_of_entity<T: Fn(&&Components) -> bool>(
@@ -71,6 +53,25 @@ impl ComponentsController {
         self.crash_if_there_are_more_than_one_match_for_condition(&matched_components);
 
         Ok(matched_components.first().unwrap())
+    }
+
+    pub fn manipulate_component<
+        T: Fn(&u32, &mut Vec<Components>) -> bool,
+        U: Fn(&u32, &mut Vec<Components>),
+    >(
+        &mut self,
+        matching_condition: T,
+        operation_to_perform_on_matching: U,
+    ) -> Result<(), String> {
+        for (id, components) in &mut self.components {
+            if matching_condition(id, components) {
+                operation_to_perform_on_matching(id, components);
+
+                break;
+            }
+        }
+
+        Ok(())
     }
 
     pub fn does_any_component_of_an_entity_check_a_condition<T: Fn(&Components) -> bool>(

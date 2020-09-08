@@ -4,6 +4,12 @@ use persistence::domain::persist_settle_in_cave_decision::persist_settle_in_cave
 
 pub struct MemoryPersistenceController {}
 
+impl Default for MemoryPersistenceController {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MemoryPersistenceController {
     pub fn new() -> MemoryPersistenceController {
         MemoryPersistenceController {}
@@ -11,7 +17,7 @@ impl MemoryPersistenceController {
 
     pub fn persist_decisions(
         &self,
-        decisions: &Vec<Decisions>,
+        decisions: &[Decisions],
         components_controller: &mut ComponentsController,
     ) -> Result<(), String> {
         // Should go through the decisions one by one and modify the appropriate components depending on the circumstances it finds the involved

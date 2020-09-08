@@ -202,4 +202,31 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_can_add_a_building_for_a_space_entity() -> Result<(), String> {
+        let mut components_controller = ComponentsController::new();
+
+        let mut id_generator = IdGenerator::new();
+
+        let space_id = id_generator.generate();
+
+        components_controller.add(space_id, Components::Coordinate { x: 0, y: -3, z: 2 })?;
+        components_controller.add(
+            space_id,
+            Components::Building {
+                inhabitants: Vec::new(),
+                room_limit: 1,
+            },
+        )?;
+
+        assert_eq!(
+            components_controller
+                .does_any_component_of_an_entity_check_a_condition(space_id, |component| component
+                    .is_building()),
+            true
+        );
+
+        Ok(())
+    }
 }

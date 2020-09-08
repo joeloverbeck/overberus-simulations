@@ -11,6 +11,10 @@ pub enum Components {
         inhabitants: Vec<u32>,
         room_limit: usize,
     },
+    Building {
+        inhabitants: Vec<u32>,
+        room_limit: usize,
+    },
     FakeBrain,
     Beliefs(Vec<Belief>),
 }

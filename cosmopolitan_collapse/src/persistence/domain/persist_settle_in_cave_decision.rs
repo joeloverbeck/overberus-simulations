@@ -2,6 +2,7 @@ use components::controllers::components_controller::ComponentsController;
 use components::domain::components::Components;
 use components::domain::manipulate_component::manipulate_component;
 
+#[allow(clippy::blocks_in_if_conditions)]
 pub fn persist_settle_in_cave_decision(
     agent_id: u32,
     space_id: u32,

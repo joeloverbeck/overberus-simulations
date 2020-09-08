@@ -12,14 +12,53 @@ impl ComponentsController {
         }
     }
 
+    pub fn get_components_mut(&mut self) -> &mut HashMap<u32, Vec<Components>> {
+        &mut self.components
+    }
+
+    fn crash_if_there_are_no_components_for_entity(&self, entity_id: u32) {
+        if !self.components.contains_key(&entity_id) {
+            panic!("Attempted to retrieve a component of an entity, but there were no entries for entity {:?}.", entity_id);
+        }
+    }
+
+    fn crash_if_there_are_more_than_one_match_for_condition(
+        &self,
+        matched_components: &Vec<&Components>,
+    ) {
+        if matched_components.len() > 1 {
+            panic!("Attempted to retrieve a component of an entity, but it had more than one component matching the passed condition. Retrieved: {:?}", matched_components);
+        }
+    }
+
+    pub fn get_mut_component_of_entity<T: Fn(&&mut Components) -> bool>(
+        &mut self,
+        entity_id: u32,
+        condition: T,
+    ) -> Result<&mut Components, String> {
+        self.crash_if_there_are_no_components_for_entity(entity_id);
+
+        let matched_components: Vec<&mut Components> = self
+            .components
+            .get_mut(&entity_id)
+            .unwrap()
+            .iter_mut()
+            .filter(condition)
+            .collect();
+
+        if matched_components.len() > 1 {
+            panic!("Attempted to retrieve a component of an entity, but it had more than one component matching the passed condition. Retrieved: {:?}", matched_components);
+        }
+
+        Ok(*matched_components.first().unwrap())
+    }
+
     pub fn get_component_of_entity<T: Fn(&&Components) -> bool>(
         &self,
         entity_id: u32,
         condition: T,
     ) -> Result<&Components, String> {
-        if !self.components.contains_key(&entity_id) {
-            panic!("Attempted to retrieve a component of an entity, but there were no entries for entity {:?}.", entity_id);
-        }
+        self.crash_if_there_are_no_components_for_entity(entity_id);
 
         let matched_components: Vec<&Components> = self
             .components
@@ -29,9 +68,7 @@ impl ComponentsController {
             .filter(condition)
             .collect();
 
-        if matched_components.len() > 1 {
-            panic!("Attempted to retrieve a component of an entity, but it had more than one component matching the passed condition. Retrieved: {:?}", matched_components);
-        }
+        self.crash_if_there_are_more_than_one_match_for_condition(&matched_components);
 
         Ok(matched_components.first().unwrap())
     }
@@ -146,17 +183,13 @@ mod tests {
 
         let entity_id = id_generator.generate();
 
-        if let Err(error) =
-            components_controller.add(entity_id, Components::Coordinate { x: 0, y: -3, z: 2 })
-        {
-            panic!("Failed to add component. Error: {:?}", error);
-        }
+        components_controller
+            .add(entity_id, Components::Coordinate { x: 0, y: -3, z: 2 })
+            .unwrap();
 
-        if let Err(error) =
-            components_controller.add(entity_id, Components::Coordinate { x: 0, y: -4, z: 2 })
-        {
-            panic!("Failed to add component. Error: {:?}", error);
-        }
+        components_controller
+            .add(entity_id, Components::Coordinate { x: 0, y: -4, z: 2 })
+            .unwrap();
 
         if let Err(error) = components_controller
             .get_component_of_entity(entity_id, |owned_component| owned_component.is_coordinate())

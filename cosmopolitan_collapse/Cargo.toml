@@ -5,3 +5,5 @@ authors = ["Joel Overbeck"]
 
 [dependencies]
 derive_is_enum_variant = "0.1.1"
+neural_networks = { path = "../neural_networks" }
+file_system = { path = "../file_system" }

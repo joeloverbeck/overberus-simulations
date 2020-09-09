@@ -1,3 +1,8 @@
+extern crate neural_networks;
+
+use self::neural_networks::neural_network::NeuralNetwork;
+use self::neural_networks::neuron::Neuron;
+
 use agents::belief::Belief;
 
 #[derive(Debug, Clone, is_enum_variant)]
@@ -20,6 +25,9 @@ pub enum Components {
         room_limit: usize,
     },
     Name(String),
+    Brain {
+        settling_in: NeuralNetwork<Neuron>,
+    },
     FakeBrain,
     Beliefs(Vec<Belief>),
 }

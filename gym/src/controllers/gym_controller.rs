@@ -22,7 +22,7 @@ pub struct GymController<
     T: GenomeTrait<U, V> + Clone,
     U: NeuralNetworkTrait<V> + Clone,
     V: NeuronTrait + Clone,
-    W: Fn(u32) -> bool,
+    W: Fn(u32, &Option<T>) -> bool,
     X: Fn(&mut Vec<T>, &mut Z) -> Result<(), String>,
     Y: Fn(&Population<T, U, V>, &mut Z) -> Result<(), String>,
     Z: RandomizerTrait,
@@ -41,7 +41,7 @@ impl<
         T: GenomeTrait<U, V> + Clone,
         U: NeuralNetworkTrait<V> + Clone,
         V: NeuronTrait + Clone,
-        W: Fn(u32) -> bool,
+        W: Fn(u32, &Option<T>) -> bool,
         X: Fn(&mut Vec<T>, &mut Z) -> Result<(), String>,
         Y: Fn(&Population<T, U, V>, &mut Z) -> Result<(), String>,
         Z: RandomizerTrait,
@@ -78,7 +78,7 @@ impl<
         generation_training_reporter: D,
         randomizer: &mut Z,
     ) -> Result<Population<T, U, V>, String> {
-        while (self.continue_condition)(self.generations) {
+        while (self.continue_condition)(self.generations, &self.winner) {
             (self.train_genomes)(self.population.get_genomes_mut()?, randomizer)?;
 
             let population_size_before_evolving = self.population.get_size();
@@ -158,7 +158,7 @@ mod tests {
 
         let mut sut = GymController::new(
             population,
-            |generations: u32| {
+            |generations, _current_winner| {
                 if generations < 10 {
                     true
                 } else {

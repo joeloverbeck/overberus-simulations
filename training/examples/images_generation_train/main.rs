@@ -127,7 +127,7 @@ fn main() {
 
     let mut gym_controller = GymController::new(
         population,
-        |generation_number| if generation_number >= 1 { false } else { true },
+        |generation_number, _current_winner| if generation_number >= 1 { false } else { true },
         |_genomes, _randomizer| Ok(()),
         |evolved_population, randomizer| {
             process_generation_of_images_from_neural_networks(

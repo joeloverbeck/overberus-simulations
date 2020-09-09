@@ -1,5 +1,6 @@
 use agents::decisions::Decisions;
 use components::controllers::components_controller::ComponentsController;
+use persistence::domain::persist_setting_up_camp_decision::persist_setting_up_camp_decision;
 use persistence::domain::persist_settle_in_building_decision::persist_settle_in_building_decision;
 use persistence::domain::persist_settle_in_cave_decision::persist_settle_in_cave_decision;
 
@@ -30,6 +31,10 @@ impl MemoryPersistenceController {
             }
             Decisions::SettleInBuilding { agent_id, space_id } => {
                 persist_settle_in_building_decision(*agent_id, *space_id, components_controller)
+                    .unwrap()
+            }
+            Decisions::SetUpCamp { agent_id, space_id } => {
+                persist_setting_up_camp_decision(*agent_id, *space_id, components_controller)
                     .unwrap()
             }
             _ => panic!(

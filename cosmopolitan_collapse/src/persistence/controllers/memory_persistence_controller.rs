@@ -37,10 +37,7 @@ impl MemoryPersistenceController {
                 persist_setting_up_camp_decision(*agent_id, *space_id, components_controller)
                     .unwrap()
             }
-            _ => panic!(
-                "Persist decisions not handled for decision type {:?}",
-                decision
-            ),
+            Decisions::None => (),
         });
 
         Ok(())

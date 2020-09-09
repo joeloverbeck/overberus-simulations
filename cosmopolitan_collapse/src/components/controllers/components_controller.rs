@@ -12,6 +12,10 @@ impl ComponentsController {
         }
     }
 
+    pub fn get_components(&self) -> &HashMap<u32, Vec<Components>> {
+        &self.components
+    }
+
     pub fn get_components_mut(&mut self) -> &mut HashMap<u32, Vec<Components>> {
         &mut self.components
     }

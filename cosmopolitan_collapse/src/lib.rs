@@ -6,4 +6,4 @@ pub mod components;
 pub mod entities;
 pub mod game_definitions;
 pub mod persistence;
-pub mod simulator;
+pub mod simulation;
